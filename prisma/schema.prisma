@@ -1,0 +1,46 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  users     User[]
+}
+
+model User {
+  id             String        @id @default(cuid())
+  email          String        @unique
+  name           String
+  password       String
+  role           String        @default("user") // user or admin
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+model LeakedDatabase {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  source      String   // where the leak was found
+  leakDate    DateTime
+  recordCount BigInt
+  dataTypes   String   // JSON string of data types (emails, passwords, etc.)
+  severity    String   // low, medium, high, critical
+  status      String   @default("active") // active, archived, investigating
+  affectedOrg String   // organization affected
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
