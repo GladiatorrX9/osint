@@ -15,8 +15,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const token = API_TOKEN;
+    if (!token) {
+      console.error("Missing LEAKOSINT_API_TOKEN environment variable");
+      return NextResponse.json({ error: "Missing API token" }, { status: 500 });
+    }
+
     const requestBody: LeakOSINTRequest = {
-      token: API_TOKEN,
+      token: token,
       request: query,
       limit: 100,
       lang: "en",
