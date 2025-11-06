@@ -20,13 +20,15 @@ export const authOptions: NextAuthOptions = {
           where: {
             email: credentials.email,
           },
-          include: {
-            organization: true,
-          },
         });
 
         if (!user || !user.password) {
           throw new Error("Invalid credentials");
+        }
+
+        // Only allow ADMIN users to login
+        if (user.role !== "ADMIN") {
+          throw new Error("Access denied. Please join our waitlist.");
         }
 
         const isCorrectPassword = await compare(
@@ -43,8 +45,6 @@ export const authOptions: NextAuthOptions = {
           email: user.email,
           name: user.name,
           role: user.role,
-          organizationId: user.organizationId,
-          organizationName: user.organization?.name,
         };
       },
     }),
@@ -53,8 +53,6 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.role = (user as any).role;
-        token.organizationId = (user as any).organizationId;
-        token.organizationName = (user as any).organizationName;
       }
       return token;
     },
@@ -62,8 +60,6 @@ export const authOptions: NextAuthOptions = {
       if (session?.user) {
         (session.user as any).id = token.sub;
         (session.user as any).role = token.role;
-        (session.user as any).organizationId = token.organizationId;
-        (session.user as any).organizationName = token.organizationName;
       }
       return session;
     },

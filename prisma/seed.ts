@@ -7,46 +7,24 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("🌱 Starting database seeding...");
 
-  // Create demo organization
-  const org1 = await prisma.organization.upsert({
-    where: { id: "demo-org-1" },
-    update: {},
-    create: {
-      id: "demo-org-1",
-      name: "GladiatorRX Security Team",
-    },
-  });
+  // Create single ADMIN user
+  const hashedPassword = await hash("GladiatorRX@2024!", 12);
 
-  console.log("✅ Created demo organization");
-
-  // Create demo users
-  const hashedPassword = await hash("password123", 12);
-
-  const user1 = await prisma.user.upsert({
+  const adminUser = await prisma.user.upsert({
     where: { email: "admin@gladiatorrx.com" },
-    update: {},
+    update: {
+      password: hashedPassword,
+      role: "ADMIN",
+    },
     create: {
       email: "admin@gladiatorrx.com",
-      name: "Admin User",
+      name: "GladiatorRX Admin",
       password: hashedPassword,
-      role: "admin",
-      organizationId: org1.id,
+      role: "ADMIN",
     },
   });
 
-  const user2 = await prisma.user.upsert({
-    where: { email: "analyst@gladiatorrx.com" },
-    update: {},
-    create: {
-      email: "analyst@gladiatorrx.com",
-      name: "Security Analyst",
-      password: hashedPassword,
-      role: "user",
-      organizationId: org1.id,
-    },
-  });
-
-  console.log("✅ Created demo users");
+  console.log("✅ Created admin user");
 
   // Create leaked databases
   const leakedDatabases = [
@@ -316,11 +294,13 @@ async function main() {
 
   console.log("✅ Created leaked database records");
   console.log("🎉 Seeding completed successfully!");
-  console.log("\n📝 Demo Credentials:");
-  console.log("Email: admin@gladiatorrx.com");
-  console.log("Password: password123");
-  console.log("\nEmail: analyst@gladiatorrx.com");
-  console.log("Password: password123");
+  console.log("\n� Admin Credentials:");
+  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+  console.log("Email:    admin@gladiatorrx.com");
+  console.log("Password: GladiatorRX@2024!");
+  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+  console.log("\n⚠️  IMPORTANT: Only ADMIN users can login to the platform.");
+  console.log("📧 Other users can join the waitlist at /register");
 }
 
 main()

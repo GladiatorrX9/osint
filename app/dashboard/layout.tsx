@@ -122,7 +122,7 @@ export default function DashboardLayout({
                 {session.user?.name}
               </p>
               <p className="text-xs text-neutral-500 truncate">
-                {session.user?.email}
+                {(session.user as any)?.role || "USER"}
               </p>
             </div>
           </div>

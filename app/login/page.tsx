@@ -172,12 +172,19 @@ export default function LoginPage() {
           </form>
 
           <p className="mt-8 text-center text-sm text-neutral-500">
-            Already have an account?{" "}
+            Don't have an account?{" "}
             <Link
               href="/register"
               className="text-orange-500 hover:text-orange-400 font-medium"
             >
-              Sign up
+              Join waitlist
+            </Link>
+            {" · "}
+            <Link
+              href="/pricing"
+              className="text-cyan-400 hover:text-cyan-300 font-medium"
+            >
+              View pricing
             </Link>
           </p>
         </div>
@@ -185,8 +192,8 @@ export default function LoginPage() {
         {/* Right Side - Testimonial Card */}
         <div className="hidden lg:block">
           <BackgroundGradient className="rounded-3xl p-8 bg-neutral-900">
-            <div className="relative h-[500px] rounded-2xl overflow-hidden bg-gradient-to-br from-amber-200 via-orange-300 to-amber-400">
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+            <div className="relative h-[500px] rounded-2xl overflow-hidden bg-linear-to-br from-amber-200 via-orange-300 to-amber-400">
+              <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent"></div>
 
               <div className="absolute top-6 left-6 flex gap-2">
                 <span className="px-3 py-1 bg-black/40 backdrop-blur-sm text-white text-xs rounded-full border border-white/20">

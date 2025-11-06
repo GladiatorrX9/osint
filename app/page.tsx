@@ -2,14 +2,184 @@
 
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, type ComponentType } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { BackgroundRippleEffect } from "@/components/ui/background-ripple-effect";
 import { BackgroundGradient } from "@/components/ui/background-gradient";
+import { BackgroundBeams } from "@/components/ui/background-beams";
+import { pricingPlans } from "@/lib/pricing";
+import {
+  IconRadar,
+  IconShieldLock,
+  IconChartHistogram,
+  IconCloudLock,
+  IconTimeline,
+  IconSparkles,
+  IconAlertTriangle,
+  IconWorldWww,
+  IconChecks,
+} from "@tabler/icons-react";
+
+type FeatureCard = {
+  title: string;
+  description: string;
+  stat: string;
+  icon: ComponentType<{ className?: string }>;
+  accent: string;
+};
+
+type Metric = {
+  value: string;
+  label: string;
+  detail: string;
+};
+
+type WorkflowStep = {
+  step: string;
+  title: string;
+  description: string;
+};
+
+type AssurancePoint = {
+  title: string;
+  description: string;
+};
+
+type HeroMetric = {
+  value: string;
+  label: string;
+};
+
+const trustedBy = [
+  "Arclight Bank",
+  "Sentinel Labs",
+  "Vertex Defense",
+  "Halcyon Systems",
+  "Northwind Capital",
+  "Eclipse Media",
+];
+
+const complianceBadges = [
+  { label: "SOC 2 Type II", detail: "Independent audit renewed annually" },
+  { label: "ISO 27001", detail: "Continuous controls monitoring" },
+  { label: "GDPR Ready", detail: "Data residency alignment" },
+  { label: "HIPAA Prepared", detail: "PHI workflows isolated" },
+];
+
+const assuranceStats = [
+  { value: "24/7", label: "Global telemetry" },
+  { value: "<4 hrs", label: "Evidence packages" },
+  { value: "99.9%", label: "Uptime SLA" },
+];
+
+const featureCards: FeatureCard[] = [
+  {
+    title: "Dark Web Telemetry",
+    description:
+      "Sweep invite-only marketplaces, stealer logs, and ransomware dump sites in real time.",
+    stat: "87 sources",
+    icon: IconRadar,
+    accent: "from-cyan-500/25 via-blue-500/10 to-transparent",
+  },
+  {
+    title: "Credential Safeguards",
+    description:
+      "Correlate leaked credentials with identity providers and trigger password rotations automatically.",
+    stat: "43% risk drop",
+    icon: IconShieldLock,
+    accent: "from-emerald-500/25 via-emerald-500/10 to-transparent",
+  },
+  {
+    title: "Signal Analytics",
+    description:
+      "Score every hit with proprietary confidence models and MITRE ATT&CK mapping for triage-ready context.",
+    stat: "Instant scoring",
+    icon: IconChartHistogram,
+    accent: "from-purple-500/25 via-indigo-500/10 to-transparent",
+  },
+  {
+    title: "Automated Playbooks",
+    description:
+      "Orchestrate enrichment, notifications, and ticketing through secure integrations in minutes.",
+    stat: "12+ automations",
+    icon: IconCloudLock,
+    accent: "from-sky-500/25 via-sky-500/10 to-transparent",
+  },
+];
+
+const intelligenceMetrics: Metric[] = [
+  {
+    value: "5.4B+",
+    label: "Credentials tracked",
+    detail: "Deduped across 61 breach markets",
+  },
+  {
+    value: "14 min",
+    label: "Median alert lead",
+    detail: "From leak discovery to notification",
+  },
+  {
+    value: "99.2%",
+    label: "Noise reduction",
+    detail: "Signal scoring tuned by analysts",
+  },
+];
+
+const workflowSteps: WorkflowStep[] = [
+  {
+    step: "01",
+    title: "Surface leaks instantly",
+    description:
+      "Streaming collectors fingerprint posts, credential dumps, and stealer logs the moment they land.",
+  },
+  {
+    step: "02",
+    title: "Enrich with context",
+    description:
+      "We match identifiers to business units, severity tiers, and exposure history for immediate prioritization.",
+  },
+  {
+    step: "03",
+    title: "Automate the response",
+    description:
+      "Sync findings into SIEM, SOAR, or ticketing workflows with pre-built, analyst-approved runbooks.",
+  },
+];
+
+const assurancePoints: AssurancePoint[] = [
+  {
+    title: "Regulated data handling",
+    description:
+      "SOC 2 Type II controls with per-tenant encryption and tamper-proof auditing across every signal.",
+  },
+  {
+    title: "Region-aware ingestion",
+    description:
+      "Choose EU or US collection paths to meet data residency, privacy mandates, and compliance programs.",
+  },
+  {
+    title: "Blue-team collaboration",
+    description:
+      "Share sanitized evidence packages securely with internal teams and trusted partners without friction.",
+  },
+];
+
+const heroMetrics: HeroMetric[] = [
+  { value: "5.4B+", label: "Credentials monitored" },
+  { value: "61", label: "Breach marketplaces" },
+  { value: "14 min", label: "Average detection lead" },
+];
+
+const testimonial = {
+  quote:
+    "GladiatorRX replaced three disconnected feeds and cut our credential leak remediation time from days to minutes.",
+  author: "Elena Fischer",
+  role: "Director, Incident Response · Arclight Bank",
+};
 
 export default function Home() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
 
   useEffect(() => {
@@ -20,250 +190,593 @@ export default function Home() {
 
   if (status === "loading") {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="flex flex-col items-center space-y-4">
-          <div className="w-12 h-12 border-4 border-neutral-800 border-t-white rounded-full animate-spin"></div>
-          <div className="text-neutral-400 text-sm">Loading...</div>
+      <div className="flex min-h-screen items-center justify-center bg-black">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-neutral-800 border-t-white" />
+          <p className="text-sm text-neutral-400">
+            Bootstrapping intelligence...
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-black relative overflow-hidden">
-      <BackgroundRippleEffect rows={15} cols={40} cellSize={60} />
+    <div className="relative min-h-screen overflow-hidden bg-black text-white">
+      <BackgroundRippleEffect rows={14} cols={36} cellSize={56} />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.18),rgba(15,23,42,0))]" />
 
-      {/* Navbar */}
-      <nav className="relative z-50 border-b border-neutral-800 bg-black/50 backdrop-blur-sm pointer-events-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-                <svg
-                  className="w-5 h-5 text-black"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                  />
-                </svg>
-              </div>
-              <span className="text-xl font-bold text-white">GladiatorRX</span>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Link
-                href="/login"
-                className="text-neutral-300 hover:text-white transition-colors text-sm font-medium"
-              >
-                Sign In
-              </Link>
-              <Link
-                href="/register"
-                className="px-4 py-2 bg-white text-black rounded-lg hover:bg-neutral-200 transition-colors text-sm font-medium"
-              >
-                Get Started
-              </Link>
-            </div>
+      <nav className="relative z-30 border-b border-white/10 bg-black/70 backdrop-blur">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
+          <Link href="/" className="flex items-center gap-3">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-sm font-semibold text-black">
+              GRX
+            </span>
+            <span className="flex flex-col leading-tight">
+              <span className="text-base font-semibold">GladiatorRX</span>
+              <span className="text-[10px] uppercase tracking-[0.35em] text-neutral-500">
+                Leak Intelligence
+              </span>
+            </span>
+          </Link>
+          <div className="flex items-center gap-4 text-sm">
+            <Link
+              href="/pricing"
+              className="text-neutral-300 transition hover:text-white"
+            >
+              Pricing
+            </Link>
+            <Link
+              href="/login"
+              className="hidden rounded-full border border-white/15 px-4 py-2 font-semibold text-white transition hover:border-white/30 hover:bg-white/10 sm:inline-flex"
+            >
+              Sign in
+            </Link>
+            <Link
+              href="/register"
+              className="inline-flex items-center justify-center rounded-full bg-linear-to-r from-cyan-400 via-blue-500 to-purple-500 px-5 py-2 font-semibold text-black transition hover:shadow-[0_0_25px_rgba(56,189,248,0.45)]"
+            >
+              Request access
+            </Link>
           </div>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] px-4 py-20 pointer-events-none">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="text-center max-w-5xl pointer-events-auto"
-        >
-          {/* Badge */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.1, duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-neutral-900 border border-neutral-800 rounded-full mb-8"
-          >
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <span className="text-neutral-300 text-sm">
-              Real-time Database Leak Monitoring
-            </span>
-          </motion.div>
-
-          {/* Main Heading */}
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.8 }}
-            className="text-5xl md:text-7xl lg:text-8xl font-bold mb-6 leading-tight"
-          >
-            <span className="text-white">Protect Your</span>
-            <br />
-            <span className="bg-clip-text text-transparent bg-linear-to-r from-cyan-400 via-blue-500 to-purple-600">
-              Digital Assets
-            </span>
-          </motion.h1>
-
-          {/* Subheading */}
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.8 }}
-            className="text-lg md:text-xl text-neutral-400 mb-10 max-w-3xl mx-auto leading-relaxed"
-          >
-            Monitor, track, and analyze database breaches across your
-            organization. Stay ahead of security threats with real-time
-            intelligence and comprehensive leak detection.
-          </motion.p>
-
-          {/* CTA Buttons */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6, duration: 0.8 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16"
-          >
-            <Link
-              href="/register"
-              className="px-8 py-4 bg-white text-black font-semibold rounded-lg hover:bg-neutral-200 transition-all transform hover:scale-105 w-full sm:w-auto shadow-lg shadow-white/10"
+      <main className="relative z-20 flex w-full flex-col items-center">
+        <section className="relative w-full overflow-hidden">
+          <div className="pointer-events-none absolute inset-0">
+            <BackgroundBeams className="opacity-40" />
+          </div>
+          <div className="relative mx-auto flex max-w-6xl flex-col items-center px-4 pb-24 pt-24 text-center md:pt-28 lg:pt-32">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6 }}
+              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2"
             >
-              Start Monitoring Now →
-            </Link>
-            <Link
-              href="/login"
-              className="px-8 py-4 border border-neutral-700 hover:bg-neutral-900 text-white font-semibold rounded-lg transition-all w-full sm:w-auto"
-            >
-              Sign In
-            </Link>
-          </motion.div>
+              <IconAlertTriangle className="h-4 w-4 text-cyan-300" />
+              <span className="text-[10px] uppercase tracking-[0.4em] text-neutral-200">
+                Live breach telemetry
+              </span>
+            </motion.div>
 
-          {/* Stats */}
+            <motion.h1
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.7 }}
+              className="mt-8 text-4xl font-semibold  leading-tight text-white sm:text-5xl md:text-6xl lg:text-7xl"
+            >
+              Detect database leaks before adversaries weaponize them
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.7 }}
+              className="mt-6 max-w-3xl text-base text-neutral-300 sm:text-lg"
+            >
+              GladiatorRX continuously harvests and enriches breach intelligence
+              from underground communities so your security team can contain
+              exposure minutes after a leak surfaces.
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.7 }}
+              className="mt-10 flex flex-col items-center gap-4 sm:flex-row"
+            >
+              <Link
+                href="/register"
+                className="inline-flex items-center justify-center rounded-full bg-linear-to-r from-cyan-400 via-blue-500 to-purple-500 px-8 py-3 text-sm font-semibold text-black shadow-[0_10px_40px_rgba(56,189,248,0.35)] transition hover:brightness-110"
+              >
+                Join the waitlist
+              </Link>
+              <Link
+                href="/pricing"
+                className="inline-flex items-center justify-center rounded-full border border-white/15 px-8 py-3 text-sm font-semibold text-white transition hover:border-white/30 hover:bg-white/10"
+              >
+                Explore pricing
+              </Link>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.7 }}
+              className="mt-12 grid w-full max-w-3xl grid-cols-1 gap-6 sm:grid-cols-3"
+            >
+              {heroMetrics.map((metric) => (
+                <div
+                  key={metric.label}
+                  className="rounded-2xl border border-white/10 bg-white/5 p-6 text-center"
+                >
+                  <p className="text-2xl font-semibold text-white sm:text-3xl">
+                    {metric.value}
+                  </p>
+                  <p className="mt-2 text-[11px] uppercase tracking-[0.35em] text-neutral-400">
+                    {metric.label}
+                  </p>
+                </div>
+              ))}
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.7 }}
+              className="mt-12 w-full max-w-4xl rounded-3xl border border-white/5 bg-white/5 px-6 py-5"
+            >
+              <p className="text-center text-xs uppercase tracking-[0.4em] text-neutral-400">
+                Trusted by incident response teams at
+              </p>
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm font-semibold text-white/80">
+                {trustedBy.map((brand) => (
+                  <span
+                    key={brand}
+                    className="tracking-[0.25em] text-neutral-300"
+                  >
+                    {brand}
+                  </span>
+                ))}
+              </div>
+            </motion.div>
+          </div>
+        </section>
+
+        <section className="relative w-full px-4 py-16 md:py-20">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8, duration: 0.8 }}
-            className="grid grid-cols-3 gap-4 md:gap-8 max-w-2xl mx-auto mb-20"
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.7 }}
+            className="mx-auto max-w-6xl"
           >
-            <div className="text-center">
-              <div className="text-3xl md:text-4xl font-bold text-white mb-1">
-                15+
-              </div>
-              <div className="text-sm text-neutral-500">Major Breaches</div>
+            <div className="flex flex-col items-center text-center">
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-[11px] uppercase tracking-[0.35em] text-neutral-200">
+                <IconSparkles className="h-4 w-4" />
+                Platform capabilities
+              </span>
+              <h2 className="mt-6 text-3xl font-semibold leading-tight sm:text-4xl md:text-5xl">
+                Operational intelligence built for blue teams
+              </h2>
+              <p className="mt-4 max-w-3xl text-sm text-neutral-400 sm:text-base">
+                Each signal is enriched with proprietary scoring, historical
+                context, and recommended actions so responders focus on
+                decisions—not data gathering.
+              </p>
             </div>
-            <div className="text-center border-x border-neutral-800">
-              <div className="text-3xl md:text-4xl font-bold text-white mb-1">
-                5B+
-              </div>
-              <div className="text-sm text-neutral-500">Records Tracked</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl md:text-4xl font-bold text-white mb-1">
-                24/7
-              </div>
-              <div className="text-sm text-neutral-500">Monitoring</div>
+
+            <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+              {featureCards.map((feature) => {
+                const Icon = feature.icon;
+                return (
+                  <BackgroundGradient
+                    key={feature.title}
+                    className="relative h-full overflow-hidden rounded-3xl border border-white/5 bg-neutral-900/60 p-6"
+                  >
+                    <div
+                      className={`pointer-events-none absolute inset-0 bg-linear-to-br ${feature.accent} opacity-80 blur-2xl`}
+                    />
+                    <div className="relative flex h-full flex-col gap-6">
+                      <div className="flex items-center justify-between">
+                        <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10">
+                          <Icon className="h-6 w-6 text-white" />
+                        </span>
+                        <span className="text-[11px] uppercase tracking-[0.35em] text-white/70">
+                          {feature.stat}
+                        </span>
+                      </div>
+                      <div className="space-y-3">
+                        <h3 className="text-xl font-semibold text-white">
+                          {feature.title}
+                        </h3>
+                        <p className="text-sm text-neutral-300">
+                          {feature.description}
+                        </p>
+                      </div>
+                    </div>
+                  </BackgroundGradient>
+                );
+              })}
             </div>
           </motion.div>
-        </motion.div>
+        </section>
 
-        {/* Features Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1, duration: 0.8 }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl w-full px-4 pointer-events-auto"
-        >
-          <BackgroundGradient className="rounded-3xl bg-neutral-900 p-8 h-full">
-            <div className="w-14 h-14 bg-cyan-500/10 rounded-2xl flex items-center justify-center mb-6">
-              <svg
-                className="w-7 h-7 text-cyan-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
+        <section className="relative w-full px-4 py-16 md:py-24">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.7 }}
+            className="mx-auto flex max-w-6xl flex-col gap-10 rounded-4xl border border-white/10 bg-neutral-950/80 p-8 backdrop-blur lg:flex-row lg:items-center lg:p-12"
+          >
+            <div className="flex-1 space-y-5">
+              <span className="text-[11px] uppercase tracking-[0.35em] text-cyan-300/80">
+                Live threat intelligence
+              </span>
+              <h2 className="text-3xl font-semibold leading-tight sm:text-4xl">
+                Real-time telemetry from underground communities
+              </h2>
+              <p className="text-sm text-neutral-400 sm:text-base">
+                Our crawlers monitor invite-only forums, ransomware shaming
+                sites, and credential exchanges. Every hit is deduplicated,
+                enriched, and pushed to your workspace instantly.
+              </p>
+              <div className="flex items-center gap-2 text-sm text-neutral-400">
+                <IconWorldWww className="h-4 w-4 text-cyan-300" />
+                <span>
+                  Coverage spans stealer logs, paste sites, botnet telemetry,
+                  and breach marketplaces.
+                </span>
+              </div>
             </div>
-            <h3 className="text-xl font-bold text-white mb-3">
-              Advanced Search
-            </h3>
-            <p className="text-neutral-400 leading-relaxed">
-              Search and filter through billions of leaked database records
-              instantly with powerful query capabilities and real-time results.
-            </p>
-          </BackgroundGradient>
 
-          <BackgroundGradient className="rounded-3xl bg-neutral-900 p-8 h-full">
-            <div className="w-14 h-14 bg-orange-500/10 rounded-2xl flex items-center justify-center mb-6">
-              <svg
-                className="w-7 h-7 text-orange-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                />
-              </svg>
+            <div className="grid flex-1 grid-cols-1 gap-4 sm:grid-cols-3">
+              {intelligenceMetrics.map((metric) => (
+                <BackgroundGradient
+                  key={metric.label}
+                  className="rounded-2xl border border-white/5 bg-neutral-900/70 p-6 text-center"
+                >
+                  <p className="text-2xl font-semibold text-white">
+                    {metric.value}
+                  </p>
+                  <p className="mt-2 text-[11px] uppercase tracking-[0.35em] text-neutral-400">
+                    {metric.label}
+                  </p>
+                  <p className="mt-3 text-sm text-cyan-200/80">
+                    {metric.detail}
+                  </p>
+                </BackgroundGradient>
+              ))}
             </div>
-            <h3 className="text-xl font-bold text-white mb-3">
-              Threat Intelligence
-            </h3>
-            <p className="text-neutral-400 leading-relaxed">
-              Track severity levels, monitor critical threats, and receive
-              alerts about new database breaches affecting your organization.
-            </p>
-          </BackgroundGradient>
+          </motion.div>
+        </section>
 
-          <BackgroundGradient className="rounded-3xl bg-neutral-900 p-8 h-full">
-            <div className="w-14 h-14 bg-purple-500/10 rounded-2xl flex items-center justify-center mb-6">
-              <svg
-                className="w-7 h-7 text-purple-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+        <section className="relative w-full px-4 py-16 md:py-24">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.7 }}
+            className="mx-auto max-w-6xl"
+          >
+            <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+              <div>
+                <span className="text-[11px] uppercase tracking-[0.35em] text-cyan-300/80">
+                  Workflow
+                </span>
+                <h2 className="mt-4 text-3xl font-semibold leading-tight sm:text-4xl">
+                  Keep your response loop ahead of adversaries
+                </h2>
+              </div>
+              <Link
+                href="/login"
+                className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white transition hover:bg-white/10"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                />
-              </svg>
+                View live breach feed
+                <IconTimeline className="h-4 w-4" />
+              </Link>
             </div>
-            <h3 className="text-xl font-bold text-white mb-3">
-              Analytics Dashboard
-            </h3>
-            <p className="text-neutral-400 leading-relaxed">
-              Visualize trends, patterns, and statistics with comprehensive
-              analytics to make informed security decisions.
-            </p>
-          </BackgroundGradient>
-        </motion.div>
 
-        {/* Footer */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.2, duration: 0.8 }}
-          className="mt-20 text-center text-neutral-500 text-sm"
-        >
+            <div className="mt-12">
+              <div className="relative">
+                <div className="absolute left-4 top-4 bottom-4 w-px bg-linear-to-b from-cyan-500/60 via-blue-500/40 to-purple-500/40 md:hidden" />
+                <ol className="grid gap-8 md:grid-cols-3">
+                  {workflowSteps.map((step) => (
+                    <li key={step.step} className="relative pl-12 md:pl-0">
+                      <div className="absolute left-0 top-0 flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/10 text-xs font-semibold text-white md:static md:mb-4 md:h-12 md:w-12 md:rounded-2xl">
+                        {step.step}
+                      </div>
+                      <BackgroundGradient className="h-full rounded-3xl border border-white/5 bg-neutral-900/60 p-6">
+                        <h3 className="text-lg font-semibold text-white">
+                          {step.title}
+                        </h3>
+                        <p className="mt-3 text-sm text-neutral-400">
+                          {step.description}
+                        </p>
+                      </BackgroundGradient>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            </div>
+          </motion.div>
+        </section>
+
+        {/* <section className="relative w-full px-4 py-16 md:py-24">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.7 }}
+            className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-5"
+          >
+            <BackgroundGradient className="rounded-3xl border border-white/5 bg-neutral-950/80 p-8 lg:col-span-3">
+              <div className="space-y-8">
+                <div className="space-y-3">
+                  <span className="inline-flex w-fit items-center gap-2 rounded-full border border-cyan-300/30 bg-cyan-300/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.35em] text-cyan-200">
+                    <IconShieldLock className="h-3.5 w-3.5" />
+                    Assurance
+                  </span>
+                  <h2 className="text-3xl font-semibold leading-tight sm:text-4xl">
+                    Built for regulated industries and high-stakes teams
+                  </h2>
+                  <p className="text-sm text-neutral-300 sm:text-base">
+                    Governance and security controls are embedded across
+                    ingestion, storage, and response so your blue team can
+                    activate breach intelligence without compliance trade-offs.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3">
+                  {complianceBadges.map((badge) => (
+                    <div
+                      key={badge.label}
+                      className="group relative flex flex-col rounded-2xl border border-white/10 bg-white/4 px-4 py-3"
+                    >
+                      <span className="text-xs font-semibold uppercase tracking-[0.3em] text-white/80">
+                        {badge.label}
+                      </span>
+                      <span className="mt-1 text-[11px] text-neutral-400">
+                        {badge.detail}
+                      </span>
+                      <div className="pointer-events-none absolute inset-0 rounded-2xl border border-white/0 bg-linear-to-br from-white/5 via-transparent to-transparent opacity-0 transition group-hover:border-white/20 group-hover:opacity-100" />
+                    </div>
+                  ))}
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {assurancePoints.map((point) => (
+                    <div
+                      key={point.title}
+                      className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-5"
+                    >
+                      <div className="pointer-events-none absolute inset-0 bg-linear-to-br from-cyan-400/10 via-transparent to-transparent opacity-60" />
+                      <div className="relative">
+                        <div className="flex items-center gap-3">
+                          <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-cyan-400/15">
+                            <IconChecks className="h-5 w-5 text-cyan-300" />
+                          </span>
+                          <h3 className="text-base font-semibold text-white">
+                            {point.title}
+                          </h3>
+                        </div>
+                        <p className="mt-3 text-sm text-neutral-300">
+                          {point.description}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="grid grid-cols-1 divide-y divide-white/5 rounded-2xl border border-white/5 bg-white/4 sm:grid-cols-3 sm:divide-y-0 sm:divide-x">
+                  {assuranceStats.map((stat) => (
+                    <div
+                      key={stat.label}
+                      className="flex flex-col items-center gap-1 px-6 py-5 text-center"
+                    >
+                      <span className="text-2xl font-semibold text-white">
+                        {stat.value}
+                      </span>
+                      <span className="text-[11px] uppercase tracking-[0.35em] text-neutral-400">
+                        {stat.label}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </BackgroundGradient>
+
+            <BackgroundGradient className="flex flex-col gap-6 rounded-3xl border border-white/5 bg-neutral-950/80 p-8 lg:col-span-2">
+              <div className="flex items-center gap-3">
+                <span className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/10">
+                  <IconSparkles className="h-5 w-5 text-white" />
+                </span>
+                <span className="text-[11px] uppercase tracking-[0.35em] text-neutral-400">
+                  Customer spotlight
+                </span>
+              </div>
+              <p className="text-lg leading-relaxed text-neutral-100">
+                {testimonial.quote}
+              </p>
+              <div>
+                <p className="text-sm font-semibold text-white">
+                  {testimonial.author}
+                </p>
+                <p className="mt-1 text-[10px] uppercase tracking-[0.35em] text-neutral-500">
+                  {testimonial.role}
+                </p>
+              </div>
+            </BackgroundGradient>
+          </motion.div>
+        </section> */}
+
+        <section className="relative w-full px-4 py-16 md:py-24">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.7 }}
+            className="mx-auto max-w-6xl"
+          >
+            <div className="text-center">
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-[11px] uppercase tracking-[0.35em] text-neutral-200">
+                <IconSparkles className="h-4 w-4" />
+                Pricing
+              </span>
+              <h2 className="mt-6 text-3xl font-semibold leading-tight sm:text-4xl md:text-5xl">
+                Simple pricing designed to scale with you
+              </h2>
+              <p className="mt-4 text-sm text-neutral-400 sm:text-base">
+                Start focused and expand coverage as your threat surface grows.
+                No hidden fees or surprise overages.
+              </p>
+            </div>
+
+            <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
+              {pricingPlans.map((plan) => {
+                const isCustom = plan.monthlyPrice === 0;
+                return (
+                  <BackgroundGradient
+                    key={plan.name}
+                    className={`relative flex h-full flex-col rounded-3xl border border-white/5 bg-neutral-900/60 p-8 ${
+                      plan.recommended ? "ring-2 ring-cyan-400/40" : ""
+                    }`}
+                  >
+                    {plan.recommended && (
+                      <span className="mb-4 inline-flex w-fit items-center justify-center rounded-full bg-linear-to-r from-cyan-400 to-blue-500 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.35em] text-black">
+                        Popular
+                      </span>
+                    )}
+                    <div className="flex items-baseline justify-between gap-3">
+                      <h3 className="text-2xl font-semibold text-white">
+                        {plan.name}
+                      </h3>
+                      <span className="text-[10px] uppercase tracking-[0.35em] text-neutral-500">
+                        {isCustom ? "Custom" : "Subscription"}
+                      </span>
+                    </div>
+                    <p className="mt-3 text-sm text-neutral-400">
+                      {plan.description}
+                    </p>
+
+                    <div className="mt-8">
+                      {isCustom ? (
+                        <div>
+                          <p className="text-4xl font-semibold text-white">
+                            Custom
+                          </p>
+                          <p className="mt-1 text-xs text-neutral-500">
+                            Designed around your breach surface
+                          </p>
+                        </div>
+                      ) : (
+                        <div>
+                          <div className="flex items-baseline gap-2">
+                            <span className="text-4xl font-semibold text-white">
+                              ${plan.monthlyPrice}
+                            </span>
+                            <span className="text-neutral-400">/month</span>
+                          </div>
+                          <p className="mt-1 text-xs text-neutral-500">
+                            ${plan.yearlyPrice}/year billed annually
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    <ul className="mt-8 space-y-3 text-sm text-neutral-300">
+                      {plan.features.map((feature) => (
+                        <li key={feature} className="flex items-start gap-3">
+                          <span className="mt-1 h-1.5 w-1.5 rounded-full bg-cyan-300" />
+                          <span>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    <Link
+                      href={plan.href}
+                      className={`mt-10 inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-semibold transition ${
+                        plan.recommended
+                          ? "bg-linear-to-r from-cyan-400 to-blue-500 text-black hover:brightness-110"
+                          : "border border-white/15 text-white hover:border-white/30 hover:bg-white/10"
+                      }`}
+                    >
+                      {isCustom ? "Talk to sales" : "Start now"}
+                    </Link>
+                  </BackgroundGradient>
+                );
+              })}
+            </div>
+
+            <p className="mt-10 text-center text-sm text-neutral-500">
+              Need procurement docs? Email
+              <a
+                href="mailto:support@gladiatorrx.com"
+                className="ml-2 text-cyan-300 hover:text-cyan-200"
+              >
+                support@gladiatorrx.com
+              </a>
+              .
+            </p>
+          </motion.div>
+        </section>
+
+        <section className="relative w-full px-4 pb-20">
+          <BackgroundGradient className="mx-auto flex max-w-6xl flex-col gap-8 rounded-3xl border border-white/10 bg-neutral-950/80 p-10 text-center md:flex-row md:items-center md:justify-between md:px-12 md:text-left">
+            <div className="max-w-2xl space-y-4">
+              <span className="text-[11px] uppercase tracking-[0.35em] text-cyan-300/80">
+                Early access
+              </span>
+              <h2 className="text-3xl font-semibold leading-tight text-white sm:text-4xl">
+                Deploy GladiatorRX before the next credential dump circulates
+              </h2>
+              <p className="text-sm text-neutral-400">
+                We configure identifiers, detection thresholds, and automated
+                workflows tailored to your threat surface during a secure
+                onboarding session.
+              </p>
+            </div>
+            <div className="flex w-full flex-col gap-3 sm:flex-row md:w-auto">
+              <Link
+                href="/register"
+                className="inline-flex flex-1 items-center justify-center rounded-xl bg-white px-6 py-3 text-sm font-semibold text-black shadow-lg shadow-white/20 transition hover:-translate-y-0.5 hover:bg-neutral-100"
+              >
+                Schedule demo
+              </Link>
+              <a
+                href="mailto:support@gladiatorrx.com"
+                className="inline-flex flex-1 items-center justify-center rounded-xl border border-white/15 px-6 py-3 text-sm font-semibold text-white transition hover:border-white/30 hover:bg-white/10"
+              >
+                Contact the team
+              </a>
+            </div>
+          </BackgroundGradient>
+        </section>
+      </main>
+
+      <footer className="border-t border-white/10 bg-black/80 py-8">
+        <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 text-sm text-neutral-500 md:flex-row md:items-center md:justify-between">
           <p>
-            © 2025 GladiatorRX. Protecting organizations from data breaches.
+            © 2025 GladiatorRX Security. Built for proactive breach response.
           </p>
-        </motion.div>
-      </div>
+          <div className="flex items-center gap-6 text-[10px] uppercase tracking-[0.35em]">
+            <Link href="/pricing" className="hover:text-white">
+              Pricing
+            </Link>
+            <Link href="/login" className="hover:text-white">
+              Admin Login
+            </Link>
+            <a
+              href="mailto:support@gladiatorrx.com"
+              className="hover:text-white"
+            >
+              Contact
+            </a>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
