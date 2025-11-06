@@ -11,13 +11,13 @@ async function main() {
   const hashedPassword = await hash("GladiatorRX@2024!", 12);
 
   const adminUser = await prisma.user.upsert({
-    where: { email: "admin@gladiatorrx.com" },
+    where: { email: "gladiator@gladiatorrx.com" },
     update: {
       password: hashedPassword,
       role: "ADMIN",
     },
     create: {
-      email: "admin@gladiatorrx.com",
+      email: "gladiator@gladiatorrx.com",
       name: "GladiatorRX Admin",
       password: hashedPassword,
       role: "ADMIN",
@@ -296,7 +296,7 @@ async function main() {
   console.log("🎉 Seeding completed successfully!");
   console.log("\n� Admin Credentials:");
   console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-  console.log("Email:    admin@gladiatorrx.com");
+  console.log("Email:    gladiator@gladiatorrx.com");
   console.log("Password: GladiatorRX@2024!");
   console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
   console.log("\n⚠️  IMPORTANT: Only ADMIN users can login to the platform.");
