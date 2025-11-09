@@ -9,6 +9,7 @@ import { BackgroundRippleEffect } from "@/components/ui/background-ripple-effect
 import { BackgroundGradient } from "@/components/ui/background-gradient";
 import { BackgroundBeams } from "@/components/ui/background-beams";
 import { pricingPlans } from "@/lib/pricing";
+import { Logo } from "@/components/logo";
 import {
   IconRadar,
   IconShieldLock,
@@ -202,23 +203,16 @@ export default function Home() {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-black text-white">
-      <BackgroundRippleEffect rows={14} cols={36} cellSize={56} />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.18),rgba(15,23,42,0))]" />
-
+    <div className="relative min-h-screen bg-black text-white">
       <nav className="relative z-30 border-b border-white/10 bg-black/70 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-          <Link href="/" className="flex items-center gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-sm font-semibold text-black">
-              GRX
-            </span>
-            <span className="flex flex-col leading-tight">
-              <span className="text-base font-semibold">GladiatorRX</span>
-              <span className="text-[10px] uppercase tracking-[0.35em] text-neutral-500">
-                Leak Intelligence
-              </span>
-            </span>
-          </Link>
+          <Logo
+            size="lg"
+            showText
+            variant="header"
+            href="/"
+            className="text-white"
+          />
           <div className="flex items-center gap-4 text-sm">
             <Link
               href="/pricing"
@@ -243,11 +237,22 @@ export default function Home() {
       </nav>
 
       <main className="relative z-20 flex w-full flex-col items-center">
-        <section className="relative w-full overflow-hidden">
+        <section className="relative h-screen w-full overflow-hidden">
+          {/* Interactive Background Ripple Grid - Only in hero section */}
+          <div className="absolute inset-0 z-0">
+            <BackgroundRippleEffect rows={14} cols={36} cellSize={60} />
+          </div>
+
+          {/* Fade out gradient at bottom */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-48 bg-linear-to-t from-black via-black/80 to-transparent" />
+
+          {/* Radial Gradient Overlay */}
+          <div className="pointer-events-none absolute inset-0 z-1 bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.18),rgba(15,23,42,0))]" />
+
           <div className="pointer-events-none absolute inset-0">
             <BackgroundBeams className="opacity-40" />
           </div>
-          <div className="relative mx-auto flex max-w-6xl flex-col items-center px-4 pb-24 pt-24 text-center md:pt-28 lg:pt-32">
+          <div className="relative mx-auto flex h-full max-w-6xl flex-col items-center justify-center px-4 text-center">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}

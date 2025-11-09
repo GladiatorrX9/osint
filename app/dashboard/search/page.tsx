@@ -1,12 +1,31 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { BackgroundGradient } from "@/components/ui/background-gradient";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import { DownloadModal } from "@/components/download-modal";
-import { Search, Download, Database, Clock, AlertTriangle } from "lucide-react";
+import {
+  Search,
+  Download,
+  Database,
+  Clock,
+  AlertTriangle,
+  Shield,
+  CheckCircle2,
+  XCircle,
+  FileSearch,
+  Loader2,
+} from "lucide-react";
 
 interface SearchResult {
   List: {
@@ -60,204 +79,314 @@ export default function SearchPage() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="container mx-auto max-w-7xl space-y-8 p-8">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
-          Search Database Leaks
-        </h1>
-        <p className="text-neutral-400">
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="flex items-center gap-3 mb-2">
+          <div className="rounded-full bg-primary/10 p-3">
+            <FileSearch className="h-6 w-6 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-4xl font-bold text-foreground">
+              Search Database Leaks
+            </h1>
+          </div>
+        </div>
+        <p className="mt-2 text-muted-foreground">
           Search across millions of leaked records to find compromised data
         </p>
-      </div>
+      </motion.div>
 
       {/* Search Form */}
-      <BackgroundGradient className="rounded-2xl bg-neutral-900 p-6">
-        <form onSubmit={handleSearch} className="space-y-4">
-          <div>
-            <Label htmlFor="search" className="mb-2 block text-white">
-              Search Query
-            </Label>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-neutral-500" />
-              <Input
-                id="search"
-                type="text"
-                placeholder="Enter email, username, phone, or domain..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 bg-neutral-800 border-neutral-700 text-white placeholder:text-neutral-500 h-12"
-              />
-            </div>
-          </div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
+      >
+        <Card>
+          <CardHeader>
+            <CardTitle>Search Query</CardTitle>
+            <CardDescription>
+              Enter an email, username, phone number, or domain to check for
+              breaches
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSearch} className="space-y-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input
+                  id="search"
+                  type="text"
+                  placeholder="e.g., user@example.com, username, +1234567890, example.com"
+                  value={searchQuery}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setSearchQuery(e.target.value)
+                  }
+                  className="h-12 pl-10"
+                />
+              </div>
 
-          <div className="flex gap-3">
-            <button
-              type="submit"
-              disabled={isLoading || !searchQuery.trim()}
-              className="px-6 py-3 bg-white text-black rounded-lg hover:bg-neutral-200 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-            >
-              {isLoading ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
-                  Searching...
-                </>
-              ) : (
-                <>
-                  <Search className="w-5 h-5" />
-                  Search
-                </>
+              <div className="flex flex-wrap gap-3">
+                <Button
+                  type="submit"
+                  disabled={isLoading || !searchQuery.trim()}
+                  className="gap-2"
+                  size="lg"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      Searching...
+                    </>
+                  ) : (
+                    <>
+                      <Search className="h-5 w-5" />
+                      Search Leaks
+                    </>
+                  )}
+                </Button>
+
+                {results && results.NumOfResults > 0 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowDownloadModal(true)}
+                    className="gap-2"
+                    size="lg"
+                  >
+                    <Download className="h-5 w-5" />
+                    Download Results
+                  </Button>
+                )}
+              </div>
+
+              {error && (
+                <div className="flex items-center gap-3 rounded-lg border border-destructive/50 bg-destructive/10 p-4">
+                  <AlertTriangle className="h-5 w-5 text-destructive" />
+                  <p className="text-sm text-destructive">{error}</p>
+                </div>
               )}
-            </button>
-
-            {results && (
-              <button
-                type="button"
-                onClick={() => setShowDownloadModal(true)}
-                className="px-6 py-3 bg-neutral-800 text-white rounded-lg hover:bg-neutral-700 transition-all font-semibold flex items-center gap-2"
-              >
-                <Download className="w-5 h-5" />
-                Download Results
-              </button>
-            )}
-          </div>
-
-          {error && (
-            <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-lg text-sm flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5" />
-              {error}
-            </div>
-          )}
-        </form>
-      </BackgroundGradient>
+            </form>
+          </CardContent>
+        </Card>
+      </motion.div>
 
       {/* Search Results Summary */}
-      {results && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="grid grid-cols-1 md:grid-cols-4 gap-4"
-        >
-          <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <Database className="w-5 h-5 text-cyan-400" />
-              <p className="text-neutral-400 text-sm">Databases</p>
-            </div>
-            <p className="text-3xl font-bold text-white">
-              {results.NumOfDatabase}
-            </p>
-          </div>
+      <AnimatePresence>
+        {results && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="grid gap-6 md:grid-cols-4"
+          >
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Databases</p>
+                    <p className="mt-2 text-3xl font-bold text-foreground">
+                      {results.NumOfDatabase}
+                    </p>
+                  </div>
+                  <div className="rounded-full bg-primary/10 p-3">
+                    <Database className="h-6 w-6 text-primary" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-          <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <Search className="w-5 h-5 text-green-400" />
-              <p className="text-neutral-400 text-sm">Total Results</p>
-            </div>
-            <p className="text-3xl font-bold text-white">
-              {results.NumOfResults}
-            </p>
-          </div>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">
+                      Total Records
+                    </p>
+                    <p className="mt-2 text-3xl font-bold text-foreground">
+                      {results.NumOfResults}
+                    </p>
+                  </div>
+                  <div className="rounded-full bg-blue-500/10 p-3">
+                    <FileSearch className="h-6 w-6 text-blue-500" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-          <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <Clock className="w-5 h-5 text-orange-400" />
-              <p className="text-neutral-400 text-sm">Search Time</p>
-            </div>
-            <p className="text-3xl font-bold text-white">
-              {results["search time"].toFixed(2)}s
-            </p>
-          </div>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Search Time</p>
+                    <p className="mt-2 text-3xl font-bold text-foreground">
+                      {results["search time"].toFixed(2)}s
+                    </p>
+                  </div>
+                  <div className="rounded-full bg-orange-500/10 p-3">
+                    <Clock className="h-6 w-6 text-orange-500" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-          <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <AlertTriangle className="w-5 h-5 text-red-400" />
-              <p className="text-neutral-400 text-sm">Status</p>
-            </div>
-            <p className="text-lg font-bold text-red-400">
-              {results.NumOfResults > 0 ? "EXPOSED" : "SAFE"}
-            </p>
-          </div>
-        </motion.div>
-      )}
+            <Card
+              className={
+                results.NumOfResults > 0
+                  ? "border-red-500/50"
+                  : "border-green-500/50"
+              }
+            >
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Status</p>
+                    <p
+                      className={`mt-2 text-2xl font-bold ${
+                        results.NumOfResults > 0
+                          ? "text-red-500"
+                          : "text-green-500"
+                      }`}
+                    >
+                      {results.NumOfResults > 0 ? "EXPOSED" : "SAFE"}
+                    </p>
+                  </div>
+                  <div
+                    className={`rounded-full p-3 ${
+                      results.NumOfResults > 0
+                        ? "bg-red-500/10"
+                        : "bg-green-500/10"
+                    }`}
+                  >
+                    {results.NumOfResults > 0 ? (
+                      <XCircle className="h-6 w-6 text-red-500" />
+                    ) : (
+                      <CheckCircle2 className="h-6 w-6 text-green-500" />
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Results */}
-      {results && (
-        <div className="space-y-4">
-          <h2 className="text-2xl font-bold text-white">Search Results</h2>
+      <AnimatePresence>
+        {results && results.NumOfResults > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="space-y-6"
+          >
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-foreground">
+                Leaked Records Found
+              </h2>
+              <Badge variant="destructive" className="text-sm">
+                {results.NumOfResults} Matches
+              </Badge>
+            </div>
 
-          {Object.entries(results.List).map(([dbName, dbData], index) => (
-            <motion.div
-              key={dbName}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 * index }}
-            >
-              <BackgroundGradient className="rounded-2xl bg-neutral-900 p-6">
-                <div className="mb-4">
-                  <div className="flex items-start justify-between mb-2">
-                    <h3 className="text-xl font-bold text-white">{dbName}</h3>
-                    <span className="px-3 py-1 bg-red-500/10 text-red-400 rounded-full text-sm font-medium border border-red-500/20">
-                      {dbData.NumOfResults} Records
-                    </span>
-                  </div>
-                  <p className="text-neutral-400 text-sm">{dbData.InfoLeak}</p>
-                </div>
-
-                <div className="space-y-3">
-                  {dbData.Data.map((record, idx) => (
-                    <div
-                      key={idx}
-                      className="bg-neutral-800 rounded-lg p-4 border border-neutral-700"
-                    >
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {Object.entries(record).map(([key, value]) => (
-                          <div key={key} className="flex flex-col">
-                            <span className="text-xs text-neutral-500 mb-1">
-                              {key}
-                            </span>
-                            <span className="text-white font-mono text-sm break-all">
-                              {String(value)}
-                            </span>
-                          </div>
-                        ))}
+            {Object.entries(results.List).map(([dbName, dbData], index) => (
+              <motion.div
+                key={dbName}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3, delay: 0.4 + index * 0.1 }}
+              >
+                <Card className="overflow-hidden">
+                  <CardHeader className="bg-muted/50">
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-1">
+                        <CardTitle className="flex items-center gap-2">
+                          <Database className="h-5 w-5 text-primary" />
+                          {dbName}
+                        </CardTitle>
+                        <CardDescription className="text-sm">
+                          {dbData.InfoLeak}
+                        </CardDescription>
                       </div>
+                      <Badge variant="destructive">
+                        {dbData.NumOfResults} Records
+                      </Badge>
                     </div>
-                  ))}
-                </div>
-              </BackgroundGradient>
-            </motion.div>
-          ))}
-        </div>
-      )}
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    <div className="space-y-4">
+                      {dbData.Data.map((record, idx) => (
+                        <div
+                          key={idx}
+                          className="rounded-lg border border-border bg-muted/30 p-4"
+                        >
+                          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            {Object.entries(record).map(([key, value]) => (
+                              <div key={key} className="space-y-1">
+                                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                                  {key}
+                                </p>
+                                <p className="break-all font-mono text-sm text-foreground">
+                                  {String(value)}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* No Results */}
-      {results && results.NumOfResults === 0 && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-center py-12"
-        >
-          <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg
-              className="w-8 h-8 text-green-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-          </div>
-          <h3 className="text-xl font-bold text-white mb-2">Good News!</h3>
-          <p className="text-neutral-400">
-            No leaked data found for your search query
-          </p>
-        </motion.div>
-      )}
+      <AnimatePresence>
+        {results && results.NumOfResults === 0 && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
+            <Card className="border-green-500/50">
+              <CardContent className="py-12 text-center">
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-500/10">
+                  <Shield className="h-8 w-8 text-green-500" />
+                </div>
+                <h3 className="mb-2 text-2xl font-bold text-foreground">
+                  All Clear!
+                </h3>
+                <p className="text-muted-foreground">
+                  No leaked data found for "{searchQuery}". Your information
+                  appears to be safe.
+                </p>
+                <Separator className="my-6" />
+                <div className="mx-auto max-w-md space-y-2 text-sm text-muted-foreground">
+                  <p className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    No matches in {results.NumOfDatabase} databases
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    Search completed in {results["search time"].toFixed(2)}s
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Download Modal */}
       {results && (

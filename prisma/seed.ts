@@ -5,26 +5,371 @@ import { hash } from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log("🌱 Starting database seeding...");
+  console.log("Starting database seeding...");
 
   // Create single ADMIN user
   const hashedPassword = await hash("GladiatorRX@2024!", 12);
 
   const adminUser = await prisma.user.upsert({
-    where: { email: "gladiator@gladiatorrx.com" },
+    where: { email: "admin@gladiatorrx.com" },
     update: {
       password: hashedPassword,
       role: "ADMIN",
     },
     create: {
-      email: "gladiator@gladiatorrx.com",
+      email: "admin@gladiatorrx.com",
       name: "GladiatorRX Admin",
       password: hashedPassword,
       role: "ADMIN",
     },
   });
 
-  console.log("✅ Created admin user");
+  console.log("✓ Created admin user");
+
+  // Create dummy organizations with users
+  const organizations = [
+    {
+      name: "TechCorp Solutions",
+      slug: "techcorp-solutions",
+      subscription: {
+        plan: "ENTERPRISE" as const,
+        interval: "YEARLY" as const,
+      },
+      users: [
+        {
+          email: "john.doe@techcorp.com",
+          name: "John Doe",
+          role: "ADMIN",
+          teamRole: "OWNER",
+        },
+        {
+          email: "jane.smith@techcorp.com",
+          name: "Jane Smith",
+          role: "USER",
+          teamRole: "ADMIN",
+        },
+        {
+          email: "mike.johnson@techcorp.com",
+          name: "Mike Johnson",
+          role: "USER",
+          teamRole: "MEMBER",
+        },
+      ],
+    },
+    {
+      name: "StartupHub Inc",
+      slug: "startuphub-inc",
+      subscription: {
+        plan: "PROFESSIONAL" as const,
+        interval: "MONTHLY" as const,
+      },
+      users: [
+        {
+          email: "sarah.wilson@startuphub.com",
+          name: "Sarah Wilson",
+          role: "USER",
+          teamRole: "OWNER",
+        },
+        {
+          email: "david.brown@startuphub.com",
+          name: "David Brown",
+          role: "USER",
+          teamRole: "MEMBER",
+        },
+      ],
+    },
+    {
+      name: "Global Enterprises",
+      slug: "global-enterprises",
+      subscription: {
+        plan: "STARTER" as const,
+        interval: "MONTHLY" as const,
+      },
+      users: [
+        {
+          email: "alex.rodriguez@global.com",
+          name: "Alex Rodriguez",
+          role: "USER",
+          teamRole: "OWNER",
+        },
+        {
+          email: "emily.davis@global.com",
+          name: "Emily Davis",
+          role: "USER",
+          teamRole: "ADMIN",
+        },
+        {
+          email: "robert.martinez@global.com",
+          name: "Robert Martinez",
+          role: "USER",
+          teamRole: "MEMBER",
+        },
+        {
+          email: "lisa.anderson@global.com",
+          name: "Lisa Anderson",
+          role: "USER",
+          teamRole: "VIEWER",
+        },
+      ],
+    },
+    {
+      name: "Digital Innovations",
+      slug: "digital-innovations",
+      subscription: {
+        plan: "PROFESSIONAL" as const,
+        interval: "YEARLY" as const,
+      },
+      users: [
+        {
+          email: "chris.taylor@digitalinno.com",
+          name: "Chris Taylor",
+          role: "USER",
+          teamRole: "OWNER",
+        },
+        {
+          email: "amanda.white@digitalinno.com",
+          name: "Amanda White",
+          role: "USER",
+          teamRole: "MEMBER",
+        },
+      ],
+    },
+    {
+      name: "CloudTech Systems",
+      slug: "cloudtech-systems",
+      subscription: {
+        plan: "ENTERPRISE" as const,
+        interval: "MONTHLY" as const,
+      },
+      users: [
+        {
+          email: "kevin.lee@cloudtech.com",
+          name: "Kevin Lee",
+          role: "USER",
+          teamRole: "OWNER",
+        },
+        {
+          email: "michelle.garcia@cloudtech.com",
+          name: "Michelle Garcia",
+          role: "USER",
+          teamRole: "ADMIN",
+        },
+        {
+          email: "daniel.thomas@cloudtech.com",
+          name: "Daniel Thomas",
+          role: "USER",
+          teamRole: "MEMBER",
+        },
+        {
+          email: "jessica.moore@cloudtech.com",
+          name: "Jessica Moore",
+          role: "USER",
+          teamRole: "MEMBER",
+        },
+        {
+          email: "brian.jackson@cloudtech.com",
+          name: "Brian Jackson",
+          role: "USER",
+          teamRole: "VIEWER",
+        },
+      ],
+    },
+  ];
+
+  // Password for all dummy users
+  const dummyPassword = await hash("Password123!", 12);
+
+  for (const orgData of organizations) {
+    console.log(`\nCreating organization: ${orgData.name}`);
+
+    // Create or get organization
+    const organization = await prisma.organization.upsert({
+      where: { slug: orgData.slug },
+      update: {},
+      create: {
+        name: orgData.name,
+        slug: orgData.slug,
+      },
+    });
+
+    // Create or update subscription for organization
+    const subscription = await prisma.subscription.upsert({
+      where: { organizationId: organization.id },
+      update: {},
+      create: {
+        organizationId: organization.id,
+        plan: orgData.subscription.plan,
+        interval: orgData.subscription.interval,
+        status: "ACTIVE",
+        currentPeriodStart: new Date(),
+        currentPeriodEnd: new Date(
+          Date.now() +
+            (orgData.subscription.interval === "YEARLY"
+              ? 365 * 24 * 60 * 60 * 1000
+              : 30 * 24 * 60 * 60 * 1000)
+        ),
+      },
+    });
+
+    console.log(`   ✓ Created ${orgData.subscription.plan} subscription`);
+
+    // Create users and team members
+    for (const userData of orgData.users) {
+      const user = await prisma.user.upsert({
+        where: { email: userData.email },
+        update: {},
+        create: {
+          email: userData.email,
+          name: userData.name,
+          password: dummyPassword,
+          role: userData.role,
+          organizationId: organization.id,
+        },
+      });
+
+      // Create team member relationship
+      const existingTeamMember = await prisma.teamMember.findFirst({
+        where: {
+          userId: user.id,
+          organizationId: organization.id,
+        },
+      });
+
+      if (!existingTeamMember) {
+        await prisma.teamMember.create({
+          data: {
+            userId: user.id,
+            organizationId: organization.id,
+            role: userData.teamRole,
+            status: "ACTIVE",
+          },
+        });
+      }
+
+      console.log(`   ✓ Created user: ${userData.name} (${userData.teamRole})`);
+    }
+  }
+
+  // Create some users without organizations
+  const unassignedUsers = [
+    { email: "freelancer1@example.com", name: "Tom Freelancer" },
+    { email: "freelancer2@example.com", name: "Anna Independent" },
+    { email: "consultant@example.com", name: "Sam Consultant" },
+  ];
+
+  console.log("\nCreating unassigned users...");
+  for (const userData of unassignedUsers) {
+    await prisma.user.upsert({
+      where: { email: userData.email },
+      update: {},
+      create: {
+        email: userData.email,
+        name: userData.name,
+        password: dummyPassword,
+        role: "USER",
+      },
+    });
+    console.log(`   ✓ Created: ${userData.name}`);
+  }
+
+  // Create some waitlist entries
+  const waitlistEntries = [
+    {
+      email: "waitlist1@example.com",
+      name: "Peter Waiting",
+      company: "Startup ABC",
+      message: "Looking forward to using GladiatorRX!",
+      status: "PENDING",
+    },
+    {
+      email: "waitlist2@example.com",
+      name: "Maria Pending",
+      company: "Tech Ventures",
+      message: "Interested in enterprise features",
+      status: "PENDING",
+    },
+    {
+      email: "approved@example.com",
+      name: "Jack Approved",
+      company: "Big Corp",
+      message: "Need OSINT tools ASAP",
+      status: "APPROVED",
+    },
+    {
+      email: "rejected@example.com",
+      name: "Bob Rejected",
+      company: null,
+      message: "Just checking it out",
+      status: "REJECTED",
+    },
+  ];
+
+  console.log("\nCreating waitlist entries...");
+  for (const entry of waitlistEntries) {
+    await prisma.waitlist.upsert({
+      where: { email: entry.email },
+      update: {},
+      create: entry,
+    });
+    console.log(`   ✓ Created: ${entry.name} (${entry.status})`);
+  }
+
+  // Create some pending invitations
+  console.log("\nCreating pending invitations...");
+  const techCorpOrg = await prisma.organization.findUnique({
+    where: { slug: "techcorp-solutions" },
+    include: { users: true },
+  });
+
+  if (techCorpOrg && techCorpOrg.users.length > 0) {
+    const inviter = techCorpOrg.users[0];
+
+    const existingInvite1 = await prisma.invitation.findFirst({
+      where: {
+        email: "newhire@example.com",
+        organizationId: techCorpOrg.id,
+        status: "PENDING",
+      },
+    });
+
+    if (!existingInvite1) {
+      await prisma.invitation.create({
+        data: {
+          email: "newhire@example.com",
+          role: "MEMBER",
+          organizationId: techCorpOrg.id,
+          invitedById: inviter.id,
+          token: `invite-${Date.now()}-1`,
+          status: "PENDING",
+          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+        },
+      });
+      console.log("   ✓ Created invitation to newhire@example.com");
+    }
+
+    const existingInvite2 = await prisma.invitation.findFirst({
+      where: {
+        email: "contractor@example.com",
+        organizationId: techCorpOrg.id,
+        status: "PENDING",
+      },
+    });
+
+    if (!existingInvite2) {
+      await prisma.invitation.create({
+        data: {
+          email: "contractor@example.com",
+          role: "VIEWER",
+          organizationId: techCorpOrg.id,
+          invitedById: inviter.id,
+          token: `invite-${Date.now()}-2`,
+          status: "PENDING",
+          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        },
+      });
+      console.log("   ✓ Created invitation to contractor@example.com");
+    }
+  }
 
   // Create leaked databases
   const leakedDatabases = [
@@ -292,20 +637,53 @@ async function main() {
     });
   }
 
-  console.log("✅ Created leaked database records");
-  console.log("🎉 Seeding completed successfully!");
-  console.log("\n� Admin Credentials:");
-  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-  console.log("Email:    gladiator@gladiatorrx.com");
+  console.log("✓ Created leaked database records");
+  console.log("\nSeeding completed successfully!");
+  console.log("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+  console.log("SEEDING SUMMARY");
+  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+  console.log(`✓ Organizations: ${organizations.length}`);
+  console.log(
+    `✓ Users: ${
+      organizations.reduce((acc, org) => acc + org.users.length, 0) +
+      unassignedUsers.length +
+      1
+    } (including admin)`
+  );
+  console.log(`✓ Subscriptions: ${organizations.length}`);
+  console.log(`✓ Waitlist Entries: ${waitlistEntries.length}`);
+  console.log(`✓ Pending Invitations: 2`);
+  console.log(`✓ Leaked Databases: ${leakedDatabases.length}`);
+
+  console.log("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+  console.log("ADMIN CREDENTIALS");
+  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+  console.log("Email:    admin@gladiatorrx.com");
   console.log("Password: GladiatorRX@2024!");
-  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-  console.log("\n⚠️  IMPORTANT: Only ADMIN users can login to the platform.");
-  console.log("📧 Other users can join the waitlist at /register");
+  console.log("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+  console.log("DUMMY USER CREDENTIALS");
+  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+  console.log(
+    "Email:    Any user email from above (e.g., john.doe@techcorp.com)"
+  );
+  console.log("Password: Password123!");
+  console.log("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+  console.log("ORGANIZATIONS CREATED");
+  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+  organizations.forEach((org, idx) => {
+    console.log(
+      `${idx + 1}. ${org.name} (${org.subscription.plan} - ${
+        org.subscription.interval
+      })`
+    );
+    console.log(`   Users: ${org.users.length}`);
+  });
+  console.log("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 }
 
 main()
   .catch((e) => {
-    console.error("❌ Seeding failed:", e);
+    console.error("✗ Seeding failed:", e);
     process.exit(1);
   })
   .finally(async () => {

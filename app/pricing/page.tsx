@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { BackgroundGradient } from "@/components/ui/background-gradient";
 import { Button } from "@/components/ui/button";
+import { Logo } from "@/components/logo";
 import { pricingPlans } from "@/lib/pricing";
 import { IconCheck, IconShield } from "@tabler/icons-react";
 
@@ -18,12 +19,7 @@ export default function PricingPage() {
       <header className="border-b border-neutral-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-                <IconShield className="text-black h-5 w-5" />
-              </div>
-              <span className="text-xl font-bold text-white">GladiatorRX</span>
-            </Link>
+            <Logo size="md" showText href="/" className="text-white" />
             <div className="flex items-center gap-4">
               <Link
                 href="/login"

@@ -7,6 +7,17 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { BackgroundGradient } from "@/components/ui/background-gradient";
+import { HoverBorderGradient } from "@/components/ui/hover-border-gradient";
+import { Logo } from "@/components/logo";
+import { motion } from "framer-motion";
+import {
+  IconUser,
+  IconMail,
+  IconBuilding,
+  IconMessage,
+  IconSparkles,
+  IconRocket,
+} from "@tabler/icons-react";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -58,28 +69,55 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-4">
-      <div className="w-full max-w-7xl grid lg:grid-cols-2 gap-8 items-center">
+    <div className="min-h-screen bg-black flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Animated background gradient orbs */}
+      <motion.div
+        className="absolute top-20 right-20 w-72 h-72 bg-cyan-500/20 rounded-full blur-3xl"
+        animate={{
+          scale: [1, 1.3, 1],
+          opacity: [0.3, 0.6, 0.3],
+        }}
+        transition={{
+          duration: 9,
+          repeat: Infinity,
+          ease: "easeInOut",
+        }}
+      />
+      <motion.div
+        className="absolute bottom-20 left-20 w-96 h-96 bg-teal-500/20 rounded-full blur-3xl"
+        animate={{
+          scale: [1.3, 1, 1.3],
+          opacity: [0.3, 0.6, 0.3],
+        }}
+        transition={{
+          duration: 11,
+          repeat: Infinity,
+          ease: "easeInOut",
+        }}
+      />
+
+      <div className="w-full max-w-7xl grid lg:grid-cols-2 gap-8 items-center relative z-10">
         {/* Left Side - Form */}
-        <div className="w-full max-w-md mx-auto lg:mx-0">
-          <div className="mb-8">
-            <div className="w-12 h-12 bg-white rounded-lg mb-6 flex items-center justify-center">
-              <svg
-                className="w-6 h-6 text-black"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
-                />
-              </svg>
-            </div>
-            <h1 className="text-4xl font-bold text-white mb-3">
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-md mx-auto lg:mx-0"
+        >
+          <div className="mb-8 text-center">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 200, damping: 15 }}
+              className="mb-6 flex justify-center"
+            >
+              <div className="bg-white rounded-lg p-4 shadow-xl shadow-cyan-500/20">
+                <Logo size="xl" showText={false} href={undefined} />
+              </div>
+            </motion.div>
+            <h1 className="text-4xl font-bold text-white mb-3 flex items-center justify-center gap-2">
               Join the Waitlist
+              <IconSparkles className="w-6 h-6 text-yellow-400" />
             </h1>
             <p className="text-slate-400 text-base">
               Get early access to our cybersecurity intelligence platform
@@ -99,8 +137,19 @@ export default function RegisterPage() {
               </div>
             )}
 
-            <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="space-y-2"
+            >
+              <Label
+                htmlFor="name"
+                className="text-slate-200 flex items-center gap-2"
+              >
+                <IconUser className="w-4 h-4 text-cyan-400" />
+                Full Name
+              </Label>
               <Input
                 id="name"
                 type="text"
@@ -108,12 +157,23 @@ export default function RegisterPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                className="bg-neutral-900 border-neutral-800 text-white placeholder:text-neutral-600"
+                className="bg-neutral-900 border-neutral-800 text-white placeholder:text-neutral-600 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all"
               />
-            </div>
+            </motion.div>
 
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="space-y-2"
+            >
+              <Label
+                htmlFor="email"
+                className="text-slate-200 flex items-center gap-2"
+              >
+                <IconMail className="w-4 h-4 text-teal-400" />
+                Email
+              </Label>
               <Input
                 id="email"
                 type="email"
@@ -121,41 +181,83 @@ export default function RegisterPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="bg-neutral-900 border-neutral-800 text-white placeholder:text-neutral-600"
+                className="bg-neutral-900 border-neutral-800 text-white placeholder:text-neutral-600 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all"
               />
-            </div>
+            </motion.div>
 
-            <div className="space-y-2">
-              <Label htmlFor="company">Company Name (Optional)</Label>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="space-y-2"
+            >
+              <Label
+                htmlFor="company"
+                className="text-slate-200 flex items-center gap-2"
+              >
+                <IconBuilding className="w-4 h-4 text-blue-400" />
+                Company Name (Optional)
+              </Label>
               <Input
                 id="company"
                 type="text"
                 placeholder="Your Company Name"
                 value={company}
                 onChange={(e) => setCompany(e.target.value)}
-                className="bg-neutral-900 border-neutral-800 text-white placeholder:text-neutral-600"
+                className="bg-neutral-900 border-neutral-800 text-white placeholder:text-neutral-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
               />
-            </div>
+            </motion.div>
 
-            <div className="space-y-2">
-              <Label htmlFor="message">Message (Optional)</Label>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="space-y-2"
+            >
+              <Label
+                htmlFor="message"
+                className="text-slate-200 flex items-center gap-2"
+              >
+                <IconMessage className="w-4 h-4 text-green-400" />
+                Message (Optional)
+              </Label>
               <textarea
                 id="message"
                 placeholder="Tell us about your use case..."
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 rows={3}
-                className="w-full bg-neutral-900 border-neutral-800 text-white placeholder:text-neutral-600 rounded-md border px-3 py-2 text-base shadow-xs transition-colors outline-none focus:border-neutral-600 resize-none"
+                className="w-full bg-neutral-900 border-neutral-800 text-white placeholder:text-neutral-600 rounded-md border px-3 py-2 text-base shadow-xs transition-colors outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 resize-none"
               />
-            </div>
+            </motion.div>
 
-            <Button
+            <motion.button
               type="submit"
-              className="w-full bg-neutral-800 hover:bg-neutral-700 text-white h-12 rounded-lg font-medium"
               disabled={isLoading}
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
+              className="w-full h-12 bg-white hover:bg-neutral-100 text-black rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? "Joining waitlist..." : "Join Waitlist"}
-            </Button>
+              {isLoading ? (
+                <>
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{
+                      duration: 1,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
+                    className="w-5 h-5 border-2 border-black border-t-transparent rounded-full"
+                  />
+                  <span>Joining waitlist...</span>
+                </>
+              ) : (
+                <>
+                  <IconRocket className="w-5 h-5" />
+                  <span>Join Waitlist</span>
+                </>
+              )}
+            </motion.button>
 
             <p className="text-xs text-center text-neutral-500">
               By joining, you agree to receive updates about our platform launch
@@ -178,10 +280,15 @@ export default function RegisterPage() {
               View pricing
             </Link>
           </p>
-        </div>
+        </motion.div>
 
         {/* Right Side - Testimonial Card */}
-        <div className="hidden lg:block">
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="hidden lg:block"
+        >
           <BackgroundGradient className="rounded-3xl p-8 bg-neutral-900">
             <div className="relative h-[500px] rounded-2xl overflow-hidden bg-linear-to-br from-blue-400 via-cyan-300 to-teal-400">
               <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent"></div>
@@ -215,7 +322,7 @@ export default function RegisterPage() {
               </div>
             </div>
           </BackgroundGradient>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

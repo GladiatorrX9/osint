@@ -1,34 +1,82 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import Providers from "@/components/layout/providers";
+import { Toaster } from "@/components/ui/toaster";
+import { fontVariables } from "@/lib/font";
+import ThemeProvider from "@/components/layout/ThemeToggle/theme-provider";
+import { cn } from "@/lib/utils";
+import type { Metadata, Viewport } from "next";
+import { cookies } from "next/headers";
+import NextTopLoader from "nextjs-toploader";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 import "./globals.css";
-import { AuthProvider } from "@/components/auth-provider";
+import "./theme.css";
+import { Geist } from "next/font/google";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-export const metadata: Metadata = {
-  title: "GladiatorRX - Database Leak Intelligence",
-  description: "Monitor and track database leaks across your organization",
+const META_THEME_COLORS = {
+  light: "#ffffff",
+  dark: "#09090b",
 };
 
-export default function RootLayout({
+export const metadata: Metadata = {
+  title: "Test Platform",
+  description: "A platform to test your knowledge and skills.",
+};
+
+export const viewport: Viewport = {
+  themeColor: META_THEME_COLORS.light,
+};
+
+const geist = Geist({
+  subsets: ["latin"],
+  variable: "--font-geist-sans",
+});
+
+export default async function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
+  const cookieStore = await cookies();
+  const activeThemeValue = cookieStore.get("active_theme")?.value;
+  const isScaled = activeThemeValue?.endsWith("-scaled");
+
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning className={`${geist.variable}`}>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                if (localStorage.theme === 'dark' || ((!('theme' in localStorage) || localStorage.theme === 'system') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                  document.querySelector('meta[name="theme-color"]').setAttribute('content', '${META_THEME_COLORS.dark}')
+                }
+              } catch (_) {}
+            `,
+          }}
+        />
+      </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-950 text-white`}
+        className={cn(
+          "bg-background overscroll-none font-sans antialiased",
+          activeThemeValue ? `theme-${activeThemeValue}` : "",
+          isScaled ? "theme-scaled" : "",
+          fontVariables
+        )}
       >
-        <AuthProvider>{children}</AuthProvider>
+        <NextTopLoader color="var(--primary)" showSpinner={false} />
+        <NuqsAdapter>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+            enableColorScheme
+          >
+            <Providers activeThemeValue={activeThemeValue as string}>
+              <Toaster />
+              {children}
+            </Providers>
+          </ThemeProvider>
+        </NuqsAdapter>
       </body>
     </html>
   );

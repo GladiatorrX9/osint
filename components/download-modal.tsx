@@ -269,7 +269,7 @@ function generateHTML(data: any, query: string): string {
 <body>
     <div class="container">
         <div class="header">
-            <h1>🛡️ GladiatorrX Security Report</h1>
+            <h1>GladiatorrX Security Report</h1>
             <p class="subtitle">Cyber Security Intelligence Platform</p>
         </div>
         

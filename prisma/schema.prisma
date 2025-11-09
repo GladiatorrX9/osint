@@ -10,13 +10,67 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String
-  password  String
-  role      String   @default("USER") // ADMIN or USER
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                 String              @id @default(cuid())
+  email              String              @unique
+  name               String
+  password           String?
+  role               String              @default("USER") // ADMIN or USER
+  organizationId     String?
+  organization       Organization?       @relation(fields: [organizationId], references: [id])
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  invitations        Invitation[]        @relation("InvitedBy")
+  receivedInvite     Invitation?         @relation("InvitedUser")
+  teamMembers        TeamMember[]
+  searchLogs         SearchLog[]
+  remediationActions RemediationAction[]
+}
+
+model Organization {
+  id           String        @id @default(cuid())
+  name         String
+  slug         String        @unique
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  users        User[]
+  teamMembers  TeamMember[]
+  invitations  Invitation[]
+  subscription Subscription?
+}
+
+model TeamMember {
+  id             String       @id @default(cuid())
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  role           String       @default("MEMBER") // OWNER, ADMIN, MEMBER, VIEWER
+  status         String       @default("ACTIVE") // ACTIVE, PENDING, INACTIVE
+  joinedAt       DateTime     @default(now())
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([userId, organizationId])
+}
+
+model Invitation {
+  id             String       @id @default(cuid())
+  email          String
+  role           String       @default("MEMBER") // OWNER, ADMIN, MEMBER, VIEWER
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  invitedById    String
+  invitedBy      User         @relation("InvitedBy", fields: [invitedById], references: [id])
+  invitedUserId  String?      @unique
+  invitedUser    User?        @relation("InvitedUser", fields: [invitedUserId], references: [id])
+  token          String       @unique
+  status         String       @default("PENDING") // PENDING, ACCEPTED, EXPIRED, CANCELLED
+  expiresAt      DateTime
+  acceptedAt     DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([email, organizationId, status])
 }
 
 model Waitlist {
@@ -31,16 +85,107 @@ model Waitlist {
 }
 
 model LeakedDatabase {
-  id          String   @id @default(cuid())
-  name        String
-  description String
-  source      String   // where the leak was found
-  leakDate    DateTime
-  recordCount BigInt
-  dataTypes   String   // JSON string of data types (emails, passwords, etc.)
-  severity    String   // low, medium, high, critical
-  status      String   @default("active") // active, archived, investigating
-  affectedOrg String   // organization affected
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String   @id @default(cuid())
+  name         String
+  description  String
+  source       String
+  leakDate     DateTime
+  recordCount  BigInt
+  dataTypes    String
+  severity     String
+  status       String   @default("active")
+  affectedOrg  String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
+
+enum SubscriptionPlan {
+  STARTER
+  PROFESSIONAL
+  ENTERPRISE
+}
+
+enum SubscriptionInterval {
+  MONTHLY
+  YEARLY
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  PAST_DUE
+  INCOMPLETE
+  TRIALING
+}
+
+enum InvoiceStatus {
+  PAID
+  PENDING
+  FAILED
+  VOID
+}
+
+model Subscription {
+  id                   String               @id @default(cuid())
+  organizationId       String               @unique
+  organization         Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  plan                 SubscriptionPlan
+  interval             SubscriptionInterval
+  status               SubscriptionStatus   @default(ACTIVE)
+  stripeCustomerId     String?
+  stripeSubscriptionId String?              @unique
+  currentPeriodStart   DateTime?
+  currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd    Boolean              @default(false)
+  canceledAt           DateTime?
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  invoices             Invoice[]
+}
+
+model Invoice {
+  id               String        @id @default(cuid())
+  subscriptionId   String
+  subscription     Subscription  @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  stripeInvoiceId  String?
+  amount           Int // Amount in cents
+  currency         String        @default("usd")
+  status           InvoiceStatus
+  invoiceUrl       String?
+  paidAt           DateTime?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+}
+
+model SearchLog {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  query          String
+  resultsCount   Int      @default(0)
+  databaseName   String?
+  searchType     String   @default("general") // general, email, domain, credential
+  ipAddress      String?
+  userAgent      String?
+  createdAt      DateTime @default(now())
+}
+
+model RemediationAction {
+  id               String   @id @default(cuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  leakId           String? // Reference to leaked database or breach
+  affectedEmail    String?
+  affectedDomain   String?
+  actionType       String // PASSWORD_RESET, ACCOUNT_DISABLED, NOTIFICATION_SENT, CREDENTIAL_ROTATED
+  status           String   @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED, FAILED
+  priority         String   @default("MEDIUM") // LOW, MEDIUM, HIGH, CRITICAL
+  description      String
+  steps            String? // JSON string of remediation steps
+  assignedTo       String?
+  completedAt      DateTime?
+  notes            String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+

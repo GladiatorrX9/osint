@@ -23,15 +23,14 @@ export const BackgroundRippleEffect = ({
       ref={ref}
       className={cn(
         "absolute inset-0 h-full w-full z-0",
-        "[--cell-border-color:var(--color-neutral-300)] [--cell-fill-color:var(--color-neutral-100)] [--cell-shadow-color:var(--color-neutral-500)]",
-        "dark:[--cell-border-color:var(--color-neutral-700)] dark:[--cell-fill-color:var(--color-neutral-900)] dark:[--cell-shadow-color:var(--color-neutral-800)]"
+        "[--cell-border-color:rgba(56,189,248,0.2)] [--cell-fill-color:rgba(6,182,212,0.06)] [--cell-shadow-color:rgba(56,189,248,0.35)]",
+        "dark:[--cell-border-color:rgba(56,189,248,0.2)] dark:[--cell-fill-color:rgba(6,182,212,0.06)] dark:[--cell-shadow-color:rgba(56,189,248,0.35)]"
       )}
     >
       <div className="relative h-full w-full overflow-hidden flex items-center justify-center">
-        <div className="pointer-events-none absolute inset-0 z-2 h-full w-full overflow-hidden" />
         <DivGrid
           key={`base-${rippleKey}`}
-          className="mask-radial-from-20% mask-radial-at-top opacity-600"
+          className="opacity-75"
           rows={rows}
           cols={cols}
           cellSize={cellSize}
@@ -113,7 +112,7 @@ const DivGrid = ({
           <div
             key={idx}
             className={cn(
-              "cell relative border-[0.5px] opacity-30 transition-opacity duration-150 will-change-transform hover:opacity-100 cursor-pointer dark:shadow-[0px_0px_40px_1px_var(--cell-shadow-color)_inset]",
+              "cell relative border-[0.5px] opacity-30 transition-all duration-200 will-change-transform hover:opacity-75 hover:bg-cyan-400/12 hover:border-cyan-400/50 hover:scale-105 cursor-pointer select-none",
               clickedCell && "animate-cell-ripple fill-mode-[none]",
               !interactive && "pointer-events-none"
             )}
@@ -125,6 +124,16 @@ const DivGrid = ({
             onClick={
               interactive ? () => onCellClick?.(rowIdx, colIdx) : undefined
             }
+            onMouseDown={(e) => {
+              if (interactive) {
+                e.currentTarget.style.transform = "scale(0.95)";
+              }
+            }}
+            onMouseUp={(e) => {
+              if (interactive) {
+                e.currentTarget.style.transform = "";
+              }
+            }}
           />
         );
       })}
