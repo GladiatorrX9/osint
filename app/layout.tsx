@@ -17,8 +17,9 @@ const META_THEME_COLORS = {
 };
 
 export const metadata: Metadata = {
-  title: "Test Platform",
-  description: "A platform to test your knowledge and skills.",
+  title: "GladiatorrX",
+  description:
+    "A platform for Cybersecurity Enthusiasts to Check Leaked Data and Remediate Risks",
 };
 
 export const viewport: Viewport = {

@@ -10,20 +10,22 @@ datasource db {
 }
 
 model User {
-  id                 String              @id @default(cuid())
-  email              String              @unique
-  name               String
-  password           String?
-  role               String              @default("USER") // ADMIN or USER
-  organizationId     String?
-  organization       Organization?       @relation(fields: [organizationId], references: [id])
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
-  invitations        Invitation[]        @relation("InvitedBy")
-  receivedInvite     Invitation?         @relation("InvitedUser")
-  teamMembers        TeamMember[]
-  searchLogs         SearchLog[]
-  remediationActions RemediationAction[]
+  id                    String              @id @default(cuid())
+  email                 String              @unique
+  name                  String
+  password              String?
+  role                  String              @default("USER") // ADMIN or USER
+  organizationId        String?
+  organization          Organization?       @relation(fields: [organizationId], references: [id])
+  resetToken            String?             @unique
+  resetTokenExpiresAt   DateTime?
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  invitations           Invitation[]        @relation("InvitedBy")
+  receivedInvite        Invitation?         @relation("InvitedUser")
+  teamMembers           TeamMember[]
+  searchLogs            SearchLog[]
+  remediationActions    RemediationAction[]
 }
 
 model Organization {
@@ -74,14 +76,16 @@ model Invitation {
 }
 
 model Waitlist {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String
-  company   String?
-  message   String?
-  status    String   @default("PENDING") // PENDING, APPROVED, REJECTED
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              String    @id @default(cuid())
+  email           String    @unique
+  name            String
+  company         String?
+  message         String?
+  status          String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  onboardingToken String?   @unique
+  tokenExpiresAt  DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 }
 
 model LeakedDatabase {

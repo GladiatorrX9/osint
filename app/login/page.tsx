@@ -1,24 +1,47 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { BackgroundGradient } from "@/components/ui/background-gradient";
 import { HoverBorderGradient } from "@/components/ui/hover-border-gradient";
 import { Logo } from "@/components/logo";
 import { motion } from "framer-motion";
-import { IconLock, IconMail, IconSparkles } from "@tabler/icons-react";
+import {
+  IconLock,
+  IconMail,
+  IconSparkles,
+  IconCheck,
+} from "@tabler/icons-react";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+
+  useEffect(() => {
+    // Check if user was redirected after successful registration
+    if (searchParams.get("registered") === "true") {
+      setSuccessMessage(
+        "Registration completed successfully! You can now log in with your credentials."
+      );
+    }
+    // Check if user was redirected after password reset
+    if (searchParams.get("reset") === "true") {
+      setSuccessMessage(
+        "Password reset successful! You can now log in with your new password."
+      );
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,6 +125,12 @@ export default function LoginPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            {successMessage && (
+              <Alert className="bg-green-500/10 border border-green-500/50 text-green-400">
+                <IconCheck className="h-4 w-4" />
+                <AlertDescription>{successMessage}</AlertDescription>
+              </Alert>
+            )}
             {error && (
               <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-lg text-sm">
                 {error}
@@ -140,13 +169,21 @@ export default function LoginPage() {
               transition={{ delay: 0.2 }}
               className="space-y-2"
             >
-              <Label
-                htmlFor="password"
-                className="text-slate-200 flex items-center gap-2"
-              >
-                <IconLock className="w-4 h-4 text-purple-400" />
-                Password
-              </Label>
+              <div className="flex items-center justify-between">
+                <Label
+                  htmlFor="password"
+                  className="text-slate-200 flex items-center gap-2"
+                >
+                  <IconLock className="w-4 h-4 text-purple-400" />
+                  Password
+                </Label>
+                <Link
+                  href="/forgot-password"
+                  className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                >
+                  Forgot password?
+                </Link>
+              </div>
               <div className="relative">
                 <Input
                   id="password"
