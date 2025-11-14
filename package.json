@@ -11,7 +11,7 @@
     "db:seed-admin": "tsx prisma/seed-admin.ts"
   },
   "prisma": {
-    "seed": "tsx prisma/seed.ts"
+    "seed": "tsx prisma/seed-admin.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

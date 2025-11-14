@@ -132,9 +132,9 @@ export default function OnboardingPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-background via-background to-cyan-950/10">
         <div className="text-center">
-          <IconLoader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+          <IconLoader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-cyan-400" />
           <p className="text-muted-foreground">Verifying your invitation...</p>
         </div>
       </div>
@@ -143,19 +143,21 @@ export default function OnboardingPage() {
 
   if (error && !waitlistData) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <Card className="max-w-md w-full">
-          <CardHeader className="text-center">
+      <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-background via-background to-cyan-950/10 p-4">
+        <Card className="max-w-md w-full border-red-900/20 shadow-2xl shadow-red-500/10">
+          <CardHeader className="text-center border-b border-red-900/20 bg-linear-to-b from-red-950/10 to-transparent">
             <div className="mx-auto mb-4">
               <Logo size="lg" />
             </div>
-            <CardTitle className="text-2xl">Invalid Link</CardTitle>
+            <CardTitle className="text-2xl text-red-400">
+              Invalid Link
+            </CardTitle>
             <CardDescription>
               This onboarding link is invalid or has expired
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <Alert variant="destructive">
+          <CardContent className="space-y-4 pt-6">
+            <Alert variant="destructive" className="border-red-900/50">
               <IconAlertCircle className="h-4 w-4" />
               <AlertDescription>{error}</AlertDescription>
             </Alert>
@@ -169,20 +171,20 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-background via-background to-cyan-950/10 p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         className="max-w-2xl w-full"
       >
-        <Card>
-          <CardHeader className="text-center space-y-4">
+        <Card className="border-cyan-900/20 shadow-2xl shadow-cyan-500/10">
+          <CardHeader className="text-center space-y-4 border-b border-cyan-900/20 bg-linear-to-b from-cyan-950/10 to-transparent">
             <div className="mx-auto">
               <Logo size="lg" showText />
             </div>
             <div>
-              <CardTitle className="text-3xl font-bold">
+              <CardTitle className="text-3xl font-bold bg-linear-to-r from-cyan-400 to-cyan-600 bg-clip-text text-transparent">
                 Welcome to GladiatorrX!
               </CardTitle>
               <CardDescription className="text-base mt-2">
@@ -192,23 +194,27 @@ export default function OnboardingPage() {
           </CardHeader>
           <CardContent>
             {/* User Info Display */}
-            <div className="bg-muted/50 rounded-lg p-4 mb-6 space-y-3">
+            <div className="bg-cyan-950/20 border border-cyan-900/30 rounded-lg p-4 mb-6 space-y-3">
               <div className="flex items-center gap-3">
-                <div className="rounded-full bg-primary/10 p-2">
-                  <IconUser className="h-4 w-4 text-primary" />
+                <div className="rounded-full bg-cyan-500/10 p-2 border border-cyan-500/20">
+                  <IconUser className="h-4 w-4 text-cyan-400" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Name</p>
-                  <p className="font-medium">{waitlistData?.name}</p>
+                  <p className="font-medium text-foreground">
+                    {waitlistData?.name}
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <div className="rounded-full bg-primary/10 p-2">
-                  <IconMail className="h-4 w-4 text-primary" />
+                <div className="rounded-full bg-cyan-500/10 p-2 border border-cyan-500/20">
+                  <IconMail className="h-4 w-4 text-cyan-400" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Email</p>
-                  <p className="font-medium">{waitlistData?.email}</p>
+                  <p className="font-medium text-foreground">
+                    {waitlistData?.email}
+                  </p>
                 </div>
               </div>
             </div>
@@ -321,9 +327,9 @@ export default function OnboardingPage() {
               </Button>
             </form>
 
-            <div className="mt-6 p-4 bg-primary/5 border border-primary/20 rounded-lg">
+            <div className="mt-6 p-4 bg-linear-to-br from-cyan-950/20 to-cyan-900/10 border border-cyan-900/30 rounded-lg">
               <p className="text-sm text-muted-foreground">
-                <strong className="text-foreground">What happens next?</strong>
+                <strong className="text-cyan-400">What happens next?</strong>
                 <br />
                 After registration, you'll be able to log in immediately and
                 start monitoring for data breaches across 15+ major databases.

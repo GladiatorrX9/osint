@@ -78,6 +78,10 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    console.log(`🔐 Hashing password for ${waitlist.email}`);
+    console.log(`Password length: ${password.length}`);
+    console.log(`Hash generated: ${hashedPassword.substring(0, 20)}...`);
+
     // Create organization, user, and team member in a transaction
     const result = await prisma.$transaction(async (tx) => {
       // Create organization

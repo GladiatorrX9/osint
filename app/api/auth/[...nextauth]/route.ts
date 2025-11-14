@@ -13,6 +13,7 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
+          console.log("❌ Missing credentials");
           throw new Error("Invalid credentials");
         }
 
@@ -23,17 +24,27 @@ export const authOptions: NextAuthOptions = {
         });
 
         if (!user || !user.password) {
+          console.log(`❌ User not found or no password: ${credentials.email}`);
           throw new Error("Invalid credentials");
         }
+
+        console.log(`🔐 Attempting login for: ${user.email}`);
+        console.log(`Password length provided: ${credentials.password.length}`);
+        console.log(`Stored hash: ${user.password.substring(0, 20)}...`);
 
         const isCorrectPassword = await compare(
           credentials.password,
           user.password
         );
 
+        console.log(`Password match: ${isCorrectPassword}`);
+
         if (!isCorrectPassword) {
+          console.log("❌ Password mismatch");
           throw new Error("Invalid credentials");
         }
+
+        console.log(`✅ Login successful for: ${user.email}`);
 
         return {
           id: user.id,
