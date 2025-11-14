@@ -96,7 +96,9 @@ export default function RemediationPage() {
   const [priorityFilter, setPriorityFilter] = useState<string>("all");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [editingAction, setEditingAction] = useState<RemediationAction | null>(null);
+  const [editingAction, setEditingAction] = useState<RemediationAction | null>(
+    null
+  );
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [formData, setFormData] = useState({
     organizationId: "all", // "all" means "All Organizations"
@@ -220,7 +222,9 @@ export default function RemediationPage() {
       const submitData = {
         id: editingAction.id,
         organizationId:
-          editFormData.organizationId === "all" ? null : editFormData.organizationId,
+          editFormData.organizationId === "all"
+            ? null
+            : editFormData.organizationId,
         affectedEmail: editFormData.affectedEmail || null,
         affectedDomain: editFormData.affectedDomain || null,
         actionType: editFormData.actionType,
@@ -528,7 +532,10 @@ export default function RemediationPage() {
                   <Select
                     value={editFormData.organizationId}
                     onValueChange={(value) =>
-                      setEditFormData({ ...editFormData, organizationId: value })
+                      setEditFormData({
+                        ...editFormData,
+                        organizationId: value,
+                      })
                     }
                   >
                     <SelectTrigger id="edit-organization">
@@ -624,7 +631,10 @@ export default function RemediationPage() {
                     id="edit-description"
                     value={editFormData.description}
                     onChange={(e) =>
-                      setEditFormData({ ...editFormData, description: e.target.value })
+                      setEditFormData({
+                        ...editFormData,
+                        description: e.target.value,
+                      })
                     }
                     placeholder="Describe the remediation action..."
                     required

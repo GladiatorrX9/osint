@@ -223,12 +223,12 @@ export async function PATCH(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { 
-      id, 
-      status, 
-      priority, 
-      notes, 
-      steps, 
+    const {
+      id,
+      status,
+      priority,
+      notes,
+      steps,
       assignedTo,
       organizationId,
       affectedEmail,
