@@ -53,12 +53,12 @@ type HeroMetric = {
 };
 
 const trustedBy = [
-  "Arclight Bank",
-  "Sentinel Labs",
-  "Vertex Defense",
-  "Halcyon Systems",
-  "Northwind Capital",
-  "Eclipse Media",
+  "Financial Services",
+  "Healthcare Organizations",
+  "Technology Companies",
+  "Government Agencies",
+  "Legal Firms",
+  "Enterprise Security Teams",
 ];
 
 const complianceBadges = [
@@ -174,7 +174,7 @@ const heroMetrics: HeroMetric[] = [
 
 const testimonial = {
   quote:
-    "GladiatorRX replaced three disconnected feeds and cut our credential leak remediation time from days to minutes.",
+    "GladiatorrX replaced three disconnected feeds and cut our credential leak remediation time from days to minutes.",
   author: "Elena Fischer",
   role: "Director, Incident Response · Arclight Bank",
 };
@@ -280,7 +280,7 @@ export default function Home() {
               transition={{ delay: 0.2, duration: 0.7 }}
               className="mt-6 max-w-3xl text-base text-neutral-300 sm:text-lg"
             >
-              GladiatorRX continuously harvests and enriches breach intelligence
+              GladiatorrX continuously harvests and enriches breach intelligence
               from underground communities so your security team can contain
               exposure minutes after a leak surfaces.
             </motion.p>
@@ -333,7 +333,7 @@ export default function Home() {
               className="mt-12 w-full max-w-4xl rounded-3xl border border-white/5 bg-white/5 px-6 py-5"
             >
               <p className="text-center text-xs uppercase tracking-[0.4em] text-neutral-400">
-                Trusted by incident response teams at
+                Protecting organizations across critical industries
               </p>
               <div className="mt-4 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm font-semibold text-white/80">
                 {trustedBy.map((brand) => (
@@ -735,7 +735,7 @@ export default function Home() {
                 Early access
               </span>
               <h2 className="text-3xl font-semibold leading-tight text-white sm:text-4xl">
-                Deploy GladiatorRX before the next credential dump circulates
+                Deploy GladiatorrX before the next credential dump circulates
               </h2>
               <p className="text-sm text-neutral-400">
                 We configure identifiers, detection thresholds, and automated
@@ -764,7 +764,7 @@ export default function Home() {
       <footer className="border-t border-white/10 bg-black/80 py-8">
         <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 text-sm text-neutral-500 md:flex-row md:items-center md:justify-between">
           <p>
-            © 2025 GladiatorRX Security. Built for proactive breach response.
+            © 2025 GladiatorrX Security. Built for proactive breach response.
           </p>
           <div className="flex items-center gap-6 text-[10px] uppercase tracking-[0.35em]">
             <Link href="/pricing" className="hover:text-white">

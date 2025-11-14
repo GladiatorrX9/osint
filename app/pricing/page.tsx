@@ -257,7 +257,7 @@ export default function PricingPage() {
       <footer className="border-t border-neutral-800 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <p className="text-center text-neutral-500 text-sm">
-            © 2025 GladiatorRX Security. All rights reserved.
+            © 2025 GladiatorrX Security. All rights reserved.
           </p>
         </div>
       </footer>

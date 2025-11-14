@@ -183,7 +183,7 @@ export default function OnboardingPage() {
             </div>
             <div>
               <CardTitle className="text-3xl font-bold">
-                Welcome to GladiatorRX!
+                Welcome to GladiatorrX!
               </CardTitle>
               <CardDescription className="text-base mt-2">
                 Complete your registration to get started
@@ -247,7 +247,7 @@ export default function OnboardingPage() {
                 <p className="text-xs text-muted-foreground">
                   {waitlistData?.company
                     ? "You can update this if needed"
-                    : "This will be the name of your organization in GladiatorRX"}
+                    : "This will be the name of your organization in GladiatorrX"}
                 </p>
               </div>
 

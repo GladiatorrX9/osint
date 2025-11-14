@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import {
   Card,
   CardContent,
@@ -47,8 +49,16 @@ import {
 } from "@tabler/icons-react";
 import { format } from "date-fns";
 
+interface Organization {
+  id: string;
+  name: string;
+  slug: string;
+}
+
 interface RemediationAction {
   id: string;
+  organizationId: string | null;
+  organization: Organization | null;
   leakId: string | null;
   affectedEmail: string | null;
   affectedDomain: string | null;
@@ -72,6 +82,8 @@ interface Pagination {
 }
 
 export default function RemediationPage() {
+  const router = useRouter();
+  const { data: session, status } = useSession();
   const [actions, setActions] = useState<RemediationAction[]>([]);
   const [pagination, setPagination] = useState<Pagination>({
     page: 1,
@@ -83,13 +95,40 @@ export default function RemediationPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [priorityFilter, setPriorityFilter] = useState<string>("all");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingAction, setEditingAction] = useState<RemediationAction | null>(null);
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [formData, setFormData] = useState({
+    organizationId: "all", // "all" means "All Organizations"
     affectedEmail: "",
     affectedDomain: "",
     actionType: "PASSWORD_RESET",
     priority: "MEDIUM",
     description: "",
   });
+  const [editFormData, setEditFormData] = useState({
+    organizationId: "all",
+    affectedEmail: "",
+    affectedDomain: "",
+    actionType: "PASSWORD_RESET",
+    priority: "MEDIUM",
+    description: "",
+  });
+
+  // Check if user is admin
+  const isAdmin = session?.user?.email === "admin@gladiatorrx.com";
+
+  const fetchOrganizations = async () => {
+    try {
+      const response = await fetch("/api/admin/organizations");
+      if (response.ok) {
+        const data = await response.json();
+        setOrganizations(data.organizations);
+      }
+    } catch (error) {
+      console.error("Error fetching organizations:", error);
+    }
+  };
 
   const fetchActions = async (page = 1) => {
     try {
@@ -104,7 +143,10 @@ export default function RemediationPage() {
       if (priorityFilter && priorityFilter !== "all")
         params.append("priority", priorityFilter);
 
-      const response = await fetch(`/api/remediation?${params}`);
+      // Use different API endpoint based on user role
+      const endpoint = isAdmin ? "/api/remediation" : "/api/user/remediation";
+      const response = await fetch(`${endpoint}?${params}`);
+
       if (response.ok) {
         const data = await response.json();
         setActions(data.actions);
@@ -118,21 +160,32 @@ export default function RemediationPage() {
   };
 
   useEffect(() => {
+    if (isAdmin) {
+      fetchOrganizations();
+    }
     fetchActions();
-  }, [statusFilter, priorityFilter]);
+  }, [statusFilter, priorityFilter, isAdmin]);
 
   const handleCreateAction = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      // Convert "all" to null for API
+      const submitData = {
+        ...formData,
+        organizationId:
+          formData.organizationId === "all" ? null : formData.organizationId,
+      };
+
       const response = await fetch("/api/remediation", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(submitData),
       });
 
       if (response.ok) {
         setIsCreateDialogOpen(false);
         setFormData({
+          organizationId: "all",
           affectedEmail: "",
           affectedDomain: "",
           actionType: "PASSWORD_RESET",
@@ -146,9 +199,59 @@ export default function RemediationPage() {
     }
   };
 
+  const openEditDialog = (action: RemediationAction) => {
+    setEditingAction(action);
+    setEditFormData({
+      organizationId: action.organizationId || "all",
+      affectedEmail: action.affectedEmail || "",
+      affectedDomain: action.affectedDomain || "",
+      actionType: action.actionType,
+      priority: action.priority,
+      description: action.description,
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleEditAction = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingAction) return;
+
+    try {
+      const submitData = {
+        id: editingAction.id,
+        organizationId:
+          editFormData.organizationId === "all" ? null : editFormData.organizationId,
+        affectedEmail: editFormData.affectedEmail || null,
+        affectedDomain: editFormData.affectedDomain || null,
+        actionType: editFormData.actionType,
+        priority: editFormData.priority,
+        description: editFormData.description,
+      };
+
+      const response = await fetch("/api/remediation", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(submitData),
+      });
+
+      if (response.ok) {
+        setIsEditDialogOpen(false);
+        setEditingAction(null);
+        fetchActions();
+      } else {
+        alert("Failed to update action");
+      }
+    } catch (error) {
+      console.error("Error updating remediation action:", error);
+      alert("Failed to update action");
+    }
+  };
+
   const updateActionStatus = async (id: string, newStatus: string) => {
     try {
-      const response = await fetch("/api/remediation", {
+      // Use different API endpoint based on user role
+      const endpoint = isAdmin ? "/api/remediation" : "/api/user/remediation";
+      const response = await fetch(endpoint, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, status: newStatus }),
@@ -159,6 +262,27 @@ export default function RemediationPage() {
       }
     } catch (error) {
       console.error("Error updating action:", error);
+    }
+  };
+
+  const deleteAction = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this remediation action?")) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/remediation?id=${id}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        fetchActions();
+      } else {
+        alert("Failed to delete action");
+      }
+    } catch (error) {
+      console.error("Error deleting action:", error);
+      alert("Failed to delete action");
     }
   };
 
@@ -231,33 +355,203 @@ export default function RemediationPage() {
         <div>
           <h1 className="text-3xl font-bold">Remediation Actions</h1>
           <p className="text-muted-foreground mt-1">
-            Manage breach response and remediation tasks
+            {isAdmin
+              ? "Create and manage remediation tasks for organizations"
+              : "View and complete remediation tasks assigned to your organization"}
           </p>
         </div>
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="gap-2">
-              <IconPlus className="h-4 w-4" />
-              New Action
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <form onSubmit={handleCreateAction}>
+        {isAdmin && (
+          <Dialog
+            open={isCreateDialogOpen}
+            onOpenChange={setIsCreateDialogOpen}
+          >
+            <DialogTrigger asChild>
+              <Button className="gap-2">
+                <IconPlus className="h-4 w-4" />
+                New Action
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <form onSubmit={handleCreateAction}>
+                <DialogHeader>
+                  <DialogTitle>Create Remediation Action</DialogTitle>
+                  <DialogDescription>
+                    Create a new remediation task for a security breach or leak
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="organization">Target Organization</Label>
+                    <Select
+                      value={formData.organizationId}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, organizationId: value })
+                      }
+                    >
+                      <SelectTrigger id="organization">
+                        <SelectValue placeholder="Select organization" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Organizations</SelectItem>
+                        {organizations.map((org) => (
+                          <SelectItem key={org.id} value={org.id}>
+                            {org.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">
+                      Select a specific organization or leave as "All
+                      Organizations" to apply to everyone
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="affectedEmail">Affected Email</Label>
+                    <Input
+                      id="affectedEmail"
+                      value={formData.affectedEmail}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          affectedEmail: e.target.value,
+                        })
+                      }
+                      placeholder="user@example.com"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="affectedDomain">Affected Domain</Label>
+                    <Input
+                      id="affectedDomain"
+                      value={formData.affectedDomain}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          affectedDomain: e.target.value,
+                        })
+                      }
+                      placeholder="example.com"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="actionType">Action Type</Label>
+                    <Select
+                      value={formData.actionType}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, actionType: value })
+                      }
+                    >
+                      <SelectTrigger id="actionType">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="PASSWORD_RESET">
+                          Password Reset
+                        </SelectItem>
+                        <SelectItem value="ACCOUNT_DISABLED">
+                          Account Disabled
+                        </SelectItem>
+                        <SelectItem value="NOTIFICATION_SENT">
+                          Notification Sent
+                        </SelectItem>
+                        <SelectItem value="CREDENTIAL_ROTATED">
+                          Credential Rotated
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="priority">Priority</Label>
+                    <Select
+                      value={formData.priority}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, priority: value })
+                      }
+                    >
+                      <SelectTrigger id="priority">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="LOW">Low</SelectItem>
+                        <SelectItem value="MEDIUM">Medium</SelectItem>
+                        <SelectItem value="HIGH">High</SelectItem>
+                        <SelectItem value="CRITICAL">Critical</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="description">Description</Label>
+                    <Textarea
+                      id="description"
+                      value={formData.description}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          description: e.target.value,
+                        })
+                      }
+                      placeholder="Describe the remediation action..."
+                      required
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsCreateDialogOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit">Create Action</Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        )}
+      </div>
+
+      {/* Edit Dialog */}
+      {isAdmin && (
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="max-w-2xl">
+            <form onSubmit={handleEditAction}>
               <DialogHeader>
-                <DialogTitle>Create Remediation Action</DialogTitle>
+                <DialogTitle>Edit Remediation Action</DialogTitle>
                 <DialogDescription>
-                  Create a new remediation task for a security breach or leak
+                  Update the remediation task details
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
-                  <Label htmlFor="affectedEmail">Affected Email</Label>
+                  <Label htmlFor="edit-organization">Target Organization</Label>
+                  <Select
+                    value={editFormData.organizationId}
+                    onValueChange={(value) =>
+                      setEditFormData({ ...editFormData, organizationId: value })
+                    }
+                  >
+                    <SelectTrigger id="edit-organization">
+                      <SelectValue placeholder="Select organization" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Organizations</SelectItem>
+                      {organizations.map((org) => (
+                        <SelectItem key={org.id} value={org.id}>
+                          {org.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-affectedEmail">Affected Email</Label>
                   <Input
-                    id="affectedEmail"
-                    value={formData.affectedEmail}
+                    id="edit-affectedEmail"
+                    value={editFormData.affectedEmail}
                     onChange={(e) =>
-                      setFormData({
-                        ...formData,
+                      setEditFormData({
+                        ...editFormData,
                         affectedEmail: e.target.value,
                       })
                     }
@@ -265,13 +559,13 @@ export default function RemediationPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="affectedDomain">Affected Domain</Label>
+                  <Label htmlFor="edit-affectedDomain">Affected Domain</Label>
                   <Input
-                    id="affectedDomain"
-                    value={formData.affectedDomain}
+                    id="edit-affectedDomain"
+                    value={editFormData.affectedDomain}
                     onChange={(e) =>
-                      setFormData({
-                        ...formData,
+                      setEditFormData({
+                        ...editFormData,
                         affectedDomain: e.target.value,
                       })
                     }
@@ -279,14 +573,14 @@ export default function RemediationPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="actionType">Action Type</Label>
+                  <Label htmlFor="edit-actionType">Action Type</Label>
                   <Select
-                    value={formData.actionType}
+                    value={editFormData.actionType}
                     onValueChange={(value) =>
-                      setFormData({ ...formData, actionType: value })
+                      setEditFormData({ ...editFormData, actionType: value })
                     }
                   >
-                    <SelectTrigger id="actionType">
+                    <SelectTrigger id="edit-actionType">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -306,14 +600,14 @@ export default function RemediationPage() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="priority">Priority</Label>
+                  <Label htmlFor="edit-priority">Priority</Label>
                   <Select
-                    value={formData.priority}
+                    value={editFormData.priority}
                     onValueChange={(value) =>
-                      setFormData({ ...formData, priority: value })
+                      setEditFormData({ ...editFormData, priority: value })
                     }
                   >
-                    <SelectTrigger id="priority">
+                    <SelectTrigger id="edit-priority">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -325,12 +619,12 @@ export default function RemediationPage() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
+                  <Label htmlFor="edit-description">Description</Label>
                   <Textarea
-                    id="description"
-                    value={formData.description}
+                    id="edit-description"
+                    value={editFormData.description}
                     onChange={(e) =>
-                      setFormData({ ...formData, description: e.target.value })
+                      setEditFormData({ ...editFormData, description: e.target.value })
                     }
                     placeholder="Describe the remediation action..."
                     required
@@ -341,16 +635,16 @@ export default function RemediationPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setIsCreateDialogOpen(false)}
+                  onClick={() => setIsEditDialogOpen(false)}
                 >
                   Cancel
                 </Button>
-                <Button type="submit">Create Action</Button>
+                <Button type="submit">Update Action</Button>
               </DialogFooter>
             </form>
           </DialogContent>
         </Dialog>
-      </div>
+      )}
 
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
@@ -437,15 +731,19 @@ export default function RemediationPage() {
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <IconShieldCheck className="h-12 w-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-semibold mb-1">
-                No remediation actions yet
+                No remediation actions
               </h3>
               <p className="text-muted-foreground mb-4">
-                Create your first action to get started
+                {isAdmin
+                  ? "Create your first action to get started"
+                  : "No pending tasks for your organization at this time"}
               </p>
-              <Button onClick={() => setIsCreateDialogOpen(true)}>
-                <IconPlus className="h-4 w-4 mr-2" />
-                New Action
-              </Button>
+              {isAdmin && (
+                <Button onClick={() => setIsCreateDialogOpen(true)}>
+                  <IconPlus className="h-4 w-4 mr-2" />
+                  New Action
+                </Button>
+              )}
             </div>
           ) : (
             <>
@@ -453,6 +751,7 @@ export default function RemediationPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Created</TableHead>
+                    <TableHead>Organization</TableHead>
                     <TableHead>Affected</TableHead>
                     <TableHead>Action Type</TableHead>
                     <TableHead>Priority</TableHead>
@@ -466,6 +765,17 @@ export default function RemediationPage() {
                     <TableRow key={action.id}>
                       <TableCell className="whitespace-nowrap">
                         {format(new Date(action.createdAt), "MMM dd, yyyy")}
+                      </TableCell>
+                      <TableCell>
+                        {action.organization ? (
+                          <Badge variant="outline" className="font-normal">
+                            {action.organization.name}
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary" className="font-normal">
+                            All Organizations
+                          </Badge>
+                        )}
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-col gap-1">
@@ -491,27 +801,48 @@ export default function RemediationPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-2">
-                          {action.status === "PENDING" && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() =>
-                                updateActionStatus(action.id, "IN_PROGRESS")
-                              }
-                            >
-                              Start
-                            </Button>
-                          )}
-                          {action.status === "IN_PROGRESS" && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() =>
-                                updateActionStatus(action.id, "COMPLETED")
-                              }
-                            >
-                              Complete
-                            </Button>
+                          {isAdmin ? (
+                            <>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => openEditDialog(action)}
+                              >
+                                Edit
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => deleteAction(action.id)}
+                              >
+                                Delete
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              {action.status === "PENDING" && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() =>
+                                    updateActionStatus(action.id, "IN_PROGRESS")
+                                  }
+                                >
+                                  Start
+                                </Button>
+                              )}
+                              {action.status === "IN_PROGRESS" && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() =>
+                                    updateActionStatus(action.id, "COMPLETED")
+                                  }
+                                >
+                                  Complete
+                                </Button>
+                              )}
+                            </>
                           )}
                         </div>
                       </TableCell>

@@ -1,4 +1,4 @@
-# GladiatorRX - Data Breach Intelligence Platform
+# GladiatorrX - Data Breach Intelligence Platform
 
 A modern Next.js application for monitoring and managing data breach intelligence with beautiful visualizations, team collaboration, and subscription management.
 

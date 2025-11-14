@@ -30,7 +30,7 @@ export function Logo({
       <div className="bg-white dark:bg-white rounded-lg p-1.5 flex items-center justify-center">
         <Image
           src="/logo.png"
-          alt="GladiatorRX Logo"
+          alt="GladiatorrX Logo"
           width={width}
           height={height}
           className="object-contain"
@@ -39,7 +39,7 @@ export function Logo({
       </div>
       {showText && (
         <div className="flex flex-col leading-tight">
-          <span className={`font-semibold ${textSize}`}>GladiatorRX</span>
+          <span className={`font-semibold ${textSize}`}>GladiatorrX</span>
           {variant === "sidebar" && (
             <span className="text-xs text-muted-foreground truncate">
               Breach Intelligence

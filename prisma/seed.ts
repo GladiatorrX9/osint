@@ -8,7 +8,7 @@ async function main() {
   console.log("Starting database seeding...");
 
   // Create single ADMIN user
-  const hashedPassword = await hash("GladiatorRX@2024!", 12);
+  const hashedPassword = await hash("GladiatorrX@2024!", 12);
 
   const adminUser = await prisma.user.upsert({
     where: { email: "admin@gladiatorrx.com" },
@@ -18,7 +18,7 @@ async function main() {
     },
     create: {
       email: "admin@gladiatorrx.com",
-      name: "GladiatorRX Admin",
+      name: "GladiatorrX Admin",
       password: hashedPassword,
       role: "ADMIN",
     },
@@ -278,7 +278,7 @@ async function main() {
       email: "waitlist1@example.com",
       name: "Peter Waiting",
       company: "Startup ABC",
-      message: "Looking forward to using GladiatorRX!",
+      message: "Looking forward to using GladiatorrX!",
       status: "PENDING",
     },
     {
@@ -659,7 +659,7 @@ async function main() {
   console.log("ADMIN CREDENTIALS");
   console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
   console.log("Email:    admin@gladiatorrx.com");
-  console.log("Password: GladiatorRX@2024!");
+  console.log("Password: GladiatorrX@2024!");
   console.log("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
   console.log("DUMMY USER CREDENTIALS");
   console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");

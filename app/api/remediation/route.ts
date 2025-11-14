@@ -3,13 +3,21 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/lib/prisma";
 
-// GET - Fetch remediation actions for the current user
+// GET - Fetch remediation actions (Admin only)
 export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check if user is admin
+    if (session.user.email !== "admin@gladiatorrx.com") {
+      return NextResponse.json(
+        { error: "Forbidden - Admin access required" },
+        { status: 403 }
+      );
     }
 
     const user = await prisma.user.findUnique({
@@ -29,10 +37,8 @@ export async function GET(req: NextRequest) {
 
     const skip = (page - 1) * limit;
 
-    // Build where clause
-    const where: any = {
-      userId: user.id,
-    };
+    // Build where clause (admin can see all remediation actions)
+    const where: any = {};
 
     if (status) {
       where.status = status;
@@ -60,6 +66,13 @@ export async function GET(req: NextRequest) {
               email: true,
             },
           },
+          organization: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            },
+          },
         },
       }),
       prisma.remediationAction.count({ where }),
@@ -83,13 +96,21 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// POST - Create a new remediation action
+// POST - Create a new remediation action (Admin only)
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check if user is admin
+    if (session.user.email !== "admin@gladiatorrx.com") {
+      return NextResponse.json(
+        { error: "Forbidden - Admin access required" },
+        { status: 403 }
+      );
     }
 
     const user = await prisma.user.findUnique({
@@ -103,6 +124,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const {
       leakId,
+      organizationId, // Can be null for "All Organizations" or specific org ID
       affectedEmail,
       affectedDomain,
       actionType,
@@ -119,9 +141,24 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // If organizationId is provided, verify it exists
+    if (organizationId) {
+      const orgExists = await prisma.organization.findUnique({
+        where: { id: organizationId },
+      });
+
+      if (!orgExists) {
+        return NextResponse.json(
+          { error: "Organization not found" },
+          { status: 404 }
+        );
+      }
+    }
+
     const action = await prisma.remediationAction.create({
       data: {
         userId: user.id,
+        organizationId: organizationId || null, // null means "All Organizations"
         leakId,
         affectedEmail,
         affectedDomain,
@@ -129,7 +166,7 @@ export async function POST(req: NextRequest) {
         status: "PENDING",
         priority: priority || "MEDIUM",
         description,
-        steps: steps || {},
+        steps: steps ? JSON.stringify(steps) : null,
         assignedTo,
       },
       include: {
@@ -138,6 +175,13 @@ export async function POST(req: NextRequest) {
             id: true,
             name: true,
             email: true,
+          },
+        },
+        organization: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
           },
         },
       },
@@ -153,13 +197,21 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// PATCH - Update a remediation action
+// PATCH - Update a remediation action (Admin only)
 export async function PATCH(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check if user is admin
+    if (session.user.email !== "admin@gladiatorrx.com") {
+      return NextResponse.json(
+        { error: "Forbidden - Admin access required" },
+        { status: 403 }
+      );
     }
 
     const user = await prisma.user.findUnique({
@@ -171,7 +223,19 @@ export async function PATCH(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { id, status, priority, notes, steps, assignedTo } = body;
+    const { 
+      id, 
+      status, 
+      priority, 
+      notes, 
+      steps, 
+      assignedTo,
+      organizationId,
+      affectedEmail,
+      affectedDomain,
+      actionType,
+      description,
+    } = body;
 
     if (!id) {
       return NextResponse.json(
@@ -180,12 +244,12 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    // Verify the action belongs to the user
+    // Verify the action exists (admin can update any action)
     const existingAction = await prisma.remediationAction.findUnique({
       where: { id },
     });
 
-    if (!existingAction || existingAction.userId !== user.id) {
+    if (!existingAction) {
       return NextResponse.json(
         { error: "Remediation action not found" },
         { status: 404 }
@@ -194,16 +258,33 @@ export async function PATCH(req: NextRequest) {
 
     const updateData: any = {};
 
+    // Allow updating all fields for admin
+    if (organizationId !== undefined) {
+      updateData.organizationId = organizationId;
+    }
+    if (affectedEmail !== undefined) {
+      updateData.affectedEmail = affectedEmail;
+    }
+    if (affectedDomain !== undefined) {
+      updateData.affectedDomain = affectedDomain;
+    }
+    if (actionType) {
+      updateData.actionType = actionType;
+    }
+    if (description) {
+      updateData.description = description;
+    }
     if (status) {
       updateData.status = status;
       if (status === "COMPLETED") {
         updateData.completedAt = new Date();
       }
     }
-
     if (priority) updateData.priority = priority;
-    if (notes) updateData.notes = notes;
-    if (steps) updateData.steps = steps;
+    if (notes !== undefined) updateData.notes = notes;
+    if (steps)
+      updateData.steps =
+        typeof steps === "string" ? steps : JSON.stringify(steps);
     if (assignedTo !== undefined) updateData.assignedTo = assignedTo;
 
     const action = await prisma.remediationAction.update({
@@ -215,6 +296,13 @@ export async function PATCH(req: NextRequest) {
             id: true,
             name: true,
             email: true,
+          },
+        },
+        organization: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
           },
         },
       },
@@ -230,13 +318,21 @@ export async function PATCH(req: NextRequest) {
   }
 }
 
-// DELETE - Delete a remediation action
+// DELETE - Delete a remediation action (Admin only)
 export async function DELETE(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check if user is admin
+    if (session.user.email !== "admin@gladiatorrx.com") {
+      return NextResponse.json(
+        { error: "Forbidden - Admin access required" },
+        { status: 403 }
+      );
     }
 
     const user = await prisma.user.findUnique({
@@ -257,12 +353,12 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
-    // Verify the action belongs to the user
+    // Verify the action exists (admin can delete any action)
     const existingAction = await prisma.remediationAction.findUnique({
       where: { id },
     });
 
-    if (!existingAction || existingAction.userId !== user.id) {
+    if (!existingAction) {
       return NextResponse.json(
         { error: "Remediation action not found" },
         { status: 404 }

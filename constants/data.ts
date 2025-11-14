@@ -220,7 +220,7 @@ export const adminNavItems: NavItem[] = [
   },
 ];
 
-// GladiatorRX Navigation - Data Breach Monitoring Platform (Regular Users)
+// GladiatorrX Navigation - Data Breach Monitoring Platform (Regular Users)
 export const gladiatorRXNavItems: NavItem[] = [
   {
     title: "Dashboard",
@@ -286,7 +286,7 @@ export const gladiatorRXNavItems: NavItem[] = [
   },
 ];
 
-// GladiatorRX Admin Navigation - Platform Management
+// GladiatorrX Admin Navigation - Platform Management
 export const gladiatorRXAdminNavItems: NavItem[] = [
   {
     title: "Overview",
@@ -377,11 +377,11 @@ export function getNavItemsByRole(
   if (email === "admin@gladiatorrx.com") {
     return gladiatorRXAdminNavItems;
   }
-  // For GladiatorRX, regular users get standard navigation
+  // For GladiatorrX, regular users get standard navigation
   return gladiatorRXNavItems;
 }
 
-// Keep the old navItems for backward compatibility (defaults to GladiatorRX nav)
+// Keep the old navItems for backward compatibility (defaults to GladiatorrX nav)
 export const navItems: NavItem[] = gladiatorRXNavItems;
 
 export interface SaleUser {

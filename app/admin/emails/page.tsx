@@ -33,10 +33,10 @@ interface WaitlistEntry {
 
 const EMAIL_TEMPLATES = {
   approval: {
-    subject: "Welcome to GladiatorRX - Your Application Has Been Approved!",
+    subject: "Welcome to GladiatorrX - Your Application Has Been Approved!",
     body: `Hello {{name}},
 
-Great news! Your application to join GladiatorRX has been approved.
+Great news! Your application to join GladiatorrX has been approved.
 
 We're excited to have you join our cybersecurity intelligence platform. You can now register and start protecting your organization's data.
 
@@ -45,20 +45,20 @@ Get started by creating your account here: [Registration Link]
 If you have any questions, feel free to reach out to our support team.
 
 Best regards,
-The GladiatorRX Team`,
+The GladiatorrX Team`,
   },
   rejection: {
-    subject: "Update on Your GladiatorRX Application",
+    subject: "Update on Your GladiatorrX Application",
     body: `Hello {{name}},
 
-Thank you for your interest in GladiatorRX.
+Thank you for your interest in GladiatorrX.
 
 After careful consideration, we're unable to approve your application at this time. This decision was based on our current capacity and focus areas.
 
 We appreciate your interest and encourage you to reapply in the future as we expand our platform.
 
 Best regards,
-The GladiatorRX Team`,
+The GladiatorrX Team`,
   },
   custom: {
     subject: "",

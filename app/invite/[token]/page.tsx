@@ -251,7 +251,7 @@ export default function AcceptInvitePage() {
             You're Invited!
           </CardTitle>
           <CardDescription className="text-center">
-            Join your team on GladiatorRX
+            Join your team on GladiatorrX
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">

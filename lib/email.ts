@@ -29,7 +29,7 @@ export async function sendInvitationEmail(data: InvitationEmailData) {
 
     const { data: emailData, error } = await resend.emails.send({
       from:
-        process.env.EMAIL_FROM || "GladiatorRX <onboarding@gladiatorrx.com>",
+        process.env.EMAIL_FROM || "GladiatorrX <onboarding@gladiatorrx.com>",
       to: [to],
       subject: `You've been invited to join ${organizationName}`,
       html: generateInvitationEmailHTML(data),
@@ -75,7 +75,7 @@ function generateInvitationEmailHTML(data: InvitationEmailData): string {
     <!-- Header -->
     <div style="background: linear-gradient(135deg, #000000 0%, #0a4a52 100%); border-radius: 12px 12px 0 0; padding: 40px 30px; text-align: center;">
       <h1 style="margin: 0; color: #06b6d4; font-size: 32px; font-weight: 700;">
-        GladiatorRX
+        GladiatorrX
       </h1>
       <p style="margin: 10px 0 0; color: #67e8f9; font-size: 14px;">
         Data Breach Intelligence Platform
@@ -89,11 +89,11 @@ function generateInvitationEmailHTML(data: InvitationEmailData): string {
       </h2>
       
       <p style="margin: 0 0 20px; color: #a1a1aa; font-size: 16px; line-height: 1.6;">
-        <strong style="color: #ffffff;">${inviterName}</strong> has invited you to join <strong style="color: #06b6d4;">${organizationName}</strong> on GladiatorRX as a <strong style="color: #06b6d4;">${role}</strong>.
+        <strong style="color: #ffffff;">${inviterName}</strong> has invited you to join <strong style="color: #06b6d4;">${organizationName}</strong> on GladiatorrX as a <strong style="color: #06b6d4;">${role}</strong>.
       </p>
 
       <p style="margin: 0 0 30px; color: #a1a1aa; font-size: 16px; line-height: 1.6;">
-        GladiatorRX helps organizations monitor and respond to data breaches in real-time. Join your team to start protecting your organization's data.
+        GladiatorrX helps organizations monitor and respond to data breaches in real-time. Join your team to start protecting your organization's data.
       </p>
 
       <!-- CTA Button -->
@@ -124,7 +124,7 @@ function generateInvitationEmailHTML(data: InvitationEmailData): string {
     <!-- Footer -->
     <div style="margin-top: 30px; text-align: center;">
       <p style="margin: 0 0 10px; color: #52525b; font-size: 13px;">
-        © ${new Date().getFullYear()} GladiatorRX. All rights reserved.
+        © ${new Date().getFullYear()} GladiatorrX. All rights reserved.
       </p>
       <p style="margin: 0; color: #52525b; font-size: 13px;">
         This is an automated email. Please do not reply to this message.
@@ -164,7 +164,7 @@ export async function sendEmail(data: SendEmailData) {
       from:
         from ||
         process.env.EMAIL_FROM ||
-        "GladiatorRX <onboarding@gladiatorrx.com>",
+        "GladiatorrX <onboarding@gladiatorrx.com>",
       to: recipients,
       subject,
       html,
@@ -216,9 +216,9 @@ export async function sendWaitlistApprovalEmail(data: OnboardingEmailData) {
     }
 
     const { data: emailData, error } = await resend.emails.send({
-      from: process.env.EMAIL_FROM || "GladiatorRX <onboarding@resend.dev>",
+      from: process.env.EMAIL_FROM || "GladiatorrX <onboarding@resend.dev>",
       to: [to],
-      subject: "Welcome to GladiatorRX - Complete Your Registration",
+      subject: "Welcome to GladiatorrX - Complete Your Registration",
       html: generateOnboardingEmailHTML(data),
     });
 
@@ -255,14 +255,14 @@ function generateOnboardingEmailHTML(data: OnboardingEmailData): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Welcome to GladiatorRX</title>
+  <title>Welcome to GladiatorrX</title>
 </head>
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #000000;">
   <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
     <!-- Header -->
     <div style="background: linear-gradient(135deg, #000000 0%, #0a4a52 100%); border-radius: 12px 12px 0 0; padding: 40px 30px; text-align: center;">
       <h1 style="margin: 0; color: #06b6d4; font-size: 32px; font-weight: 700;">
-        GladiatorRX
+        GladiatorrX
       </h1>
       <p style="margin: 10px 0 0; color: #67e8f9; font-size: 14px;">
         Data Breach Intelligence Platform
@@ -284,7 +284,7 @@ function generateOnboardingEmailHTML(data: OnboardingEmailData): string {
       </p>
 
       <p style="margin: 0 0 20px; color: #a1a1aa; font-size: 16px; line-height: 1.6;">
-        Great news! Your application to join GladiatorRX has been approved by our admin team. We're excited to have you on board!
+        Great news! Your application to join GladiatorrX has been approved by our admin team. We're excited to have you on board!
       </p>
 
       ${
@@ -352,7 +352,7 @@ function generateOnboardingEmailHTML(data: OnboardingEmailData): string {
     <!-- Footer -->
     <div style="margin-top: 30px; text-align: center;">
       <p style="margin: 0 0 10px; color: #52525b; font-size: 13px;">
-        © ${new Date().getFullYear()} GladiatorRX. All rights reserved.
+        © ${new Date().getFullYear()} GladiatorrX. All rights reserved.
       </p>
       <p style="margin: 0; color: #52525b; font-size: 13px;">
         Need help? Contact us at <a href="mailto:support@gladiatorrx.com" style="color: #06b6d4; text-decoration: none;">support@gladiatorrx.com</a>
@@ -386,9 +386,9 @@ export async function sendPasswordResetEmail(data: PasswordResetEmailData) {
     }
 
     const { data: emailData, error } = await resend.emails.send({
-      from: process.env.EMAIL_FROM || "GladiatorRX <security@gladiatorrx.com>",
+      from: process.env.EMAIL_FROM || "GladiatorrX <security@gladiatorrx.com>",
       to: [email],
-      subject: "Reset Your GladiatorRX Password",
+      subject: "Reset Your GladiatorrX Password",
       html: generatePasswordResetEmailHTML(data),
     });
 
@@ -431,7 +431,7 @@ function generatePasswordResetEmailHTML(data: PasswordResetEmailData): string {
   <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
     <!-- Header with gradient -->
     <div style="background: linear-gradient(135deg, #dc2626 0%, #f97316 100%); padding: 30px; border-radius: 12px 12px 0 0; text-align: center;">
-      <h1 style="margin: 0; color: white; font-size: 28px; font-weight: bold;">GladiatorRX</h1>
+      <h1 style="margin: 0; color: white; font-size: 28px; font-weight: bold;">GladiatorrX</h1>
       <p style="margin: 10px 0 0; color: rgba(255, 255, 255, 0.9); font-size: 14px;">Data Breach Monitoring & Protection</p>
     </div>
 
@@ -453,7 +453,7 @@ function generatePasswordResetEmailHTML(data: PasswordResetEmailData): string {
       </p>
 
       <p style="margin: 0 0 20px; color: #a3a3a3; font-size: 16px; line-height: 1.6;">
-        We received a request to reset your password for your GladiatorRX account. Click the button below to create a new password:
+        We received a request to reset your password for your GladiatorrX account. Click the button below to create a new password:
       </p>
 
       <!-- CTA Button -->
@@ -488,7 +488,7 @@ function generatePasswordResetEmailHTML(data: PasswordResetEmailData): string {
 
       <!-- Footer -->
       <p style="margin: 0; color: #525252; font-size: 12px; text-align: center; line-height: 1.6;">
-        This is an automated security email from GladiatorRX.<br>
+        This is an automated security email from GladiatorrX.<br>
         For support, contact us at support@gladiatorrx.com
       </p>
     </div>

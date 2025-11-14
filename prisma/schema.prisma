@@ -29,15 +29,16 @@ model User {
 }
 
 model Organization {
-  id           String        @id @default(cuid())
-  name         String
-  slug         String        @unique
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  users        User[]
-  teamMembers  TeamMember[]
-  invitations  Invitation[]
-  subscription Subscription?
+  id                 String              @id @default(cuid())
+  name               String
+  slug               String              @unique
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  users              User[]
+  teamMembers        TeamMember[]
+  invitations        Invitation[]
+  subscription       Subscription?
+  remediationActions RemediationAction[]
 }
 
 model TeamMember {
@@ -175,21 +176,23 @@ model SearchLog {
 }
 
 model RemediationAction {
-  id               String   @id @default(cuid())
+  id               String        @id @default(cuid())
   userId           String
-  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  leakId           String? // Reference to leaked database or breach
+  user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organizationId   String?       // If null, applies to ALL organizations
+  organization     Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  leakId           String?       // Reference to leaked database or breach
   affectedEmail    String?
   affectedDomain   String?
-  actionType       String // PASSWORD_RESET, ACCOUNT_DISABLED, NOTIFICATION_SENT, CREDENTIAL_ROTATED
-  status           String   @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED, FAILED
-  priority         String   @default("MEDIUM") // LOW, MEDIUM, HIGH, CRITICAL
+  actionType       String        // PASSWORD_RESET, ACCOUNT_DISABLED, NOTIFICATION_SENT, CREDENTIAL_ROTATED
+  status           String        @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED, FAILED
+  priority         String        @default("MEDIUM") // LOW, MEDIUM, HIGH, CRITICAL
   description      String
-  steps            String? // JSON string of remediation steps
+  steps            String?       // JSON string of remediation steps
   assignedTo       String?
   completedAt      DateTime?
   notes            String?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 }
 

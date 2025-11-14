@@ -314,7 +314,7 @@ export default function RegisterPage() {
                     </p>
                     <p className="text-white/70 text-sm">
                       <span className="font-semibold">
-                        GladiatorRX Security
+                        GladiatorrX Security
                       </span>
                     </p>
                   </div>

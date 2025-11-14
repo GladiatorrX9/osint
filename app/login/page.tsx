@@ -337,7 +337,7 @@ export default function LoginPage() {
               <div className="absolute bottom-0 left-0 right-0 p-6">
                 <div className="bg-black/40 backdrop-blur-xl rounded-2xl p-6 border border-white/10">
                   <p className="text-white text-base mb-4 leading-relaxed">
-                    GladiatorRX has completely changed how we work. What used to
+                    GladiatorrX has completely changed how we work. What used to
                     take hours every week is now fully automated.
                   </p>
                   <div>

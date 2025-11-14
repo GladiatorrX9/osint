@@ -26,11 +26,6 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Invalid credentials");
         }
 
-        // Only allow ADMIN users to login
-        if (user.role !== "ADMIN") {
-          throw new Error("Access denied. Please join our waitlist.");
-        }
-
         const isCorrectPassword = await compare(
           credentials.password,
           user.password
