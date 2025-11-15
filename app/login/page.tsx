@@ -24,6 +24,8 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [twoFactorCode, setTwoFactorCode] = useState("");
+  const [needs2FA, setNeeds2FA] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
@@ -49,17 +51,69 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const result = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-      });
+      // If we don't need 2FA yet, first check password and if user has 2FA enabled
+      if (!needs2FA) {
+        // First, check if user has 2FA enabled
+        const checkResponse = await fetch("/api/auth/check-2fa", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
 
-      if (result?.error) {
-        setError("Invalid credentials");
+        const checkData = await checkResponse.json();
+
+        if (!checkResponse.ok) {
+          setError(checkData.error || "Invalid credentials");
+          setIsLoading(false);
+          return;
+        }
+
+        if (checkData.requires2FA) {
+          // User has 2FA enabled, show the code input
+          setNeeds2FA(true);
+          setError("");
+          setIsLoading(false);
+          return;
+        }
+
+        // No 2FA required, proceed with normal login
+        const result = await signIn("credentials", {
+          email,
+          password,
+          redirect: false,
+        });
+
+        if (result?.error) {
+          setError("Invalid credentials");
+        } else {
+          router.push("/dashboard");
+          router.refresh();
+        }
       } else {
-        router.push("/dashboard");
-        router.refresh();
+        // We need 2FA, verify the code
+        if (!twoFactorCode || twoFactorCode.length !== 6) {
+          setError("Please enter a valid 6-digit code");
+          setIsLoading(false);
+          return;
+        }
+
+        const result = await signIn("credentials", {
+          email,
+          password,
+          twoFactorCode,
+          redirect: false,
+        });
+
+        if (result?.error) {
+          if (result.error === "Invalid 2FA code") {
+            setError("Invalid verification code. Please try again.");
+          } else {
+            setError("Invalid credentials");
+          }
+        } else {
+          router.push("/dashboard");
+          router.refresh();
+        }
       }
     } catch (error) {
       setError("Something went wrong");
@@ -192,14 +246,68 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  disabled={needs2FA}
                   className="bg-neutral-900 border-neutral-800 text-white placeholder:text-neutral-600 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
                 />
               </div>
             </motion.div>
 
+            {needs2FA && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                className="space-y-3"
+              >
+                <div className="rounded-lg bg-blue-500/10 border border-blue-500/30 p-3">
+                  <p className="text-sm text-blue-400">
+                    🔐 Two-factor authentication is enabled on this account
+                  </p>
+                </div>
+
+                <Label
+                  htmlFor="twoFactorCode"
+                  className="text-white font-medium flex items-center gap-2"
+                >
+                  <IconLock className="w-4 h-4" />
+                  Authentication Code
+                </Label>
+                <Input
+                  id="twoFactorCode"
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={6}
+                  placeholder="000000"
+                  value={twoFactorCode}
+                  onChange={(e) =>
+                    setTwoFactorCode(e.target.value.replace(/\D/g, ""))
+                  }
+                  autoFocus
+                  required
+                  className="bg-neutral-900 border-neutral-800 text-white placeholder:text-neutral-600 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all text-center text-2xl tracking-widest"
+                />
+                <p className="text-sm text-neutral-400">
+                  Enter the 6-digit code from your authenticator app
+                </p>
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setNeeds2FA(false);
+                    setTwoFactorCode("");
+                    setPassword("");
+                  }}
+                  className="text-neutral-400 hover:text-white"
+                >
+                  ← Back to password
+                </Button>
+              </motion.div>
+            )}
+
             <motion.button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || (needs2FA && twoFactorCode.length !== 6)}
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
               className="w-full h-12 bg-white hover:bg-neutral-100 text-black rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
@@ -215,12 +323,14 @@ export default function LoginPage() {
                     }}
                     className="w-5 h-5 border-2 border-black border-t-transparent rounded-full"
                   />
-                  <span>Signing in...</span>
+                  <span>{needs2FA ? "Verifying..." : "Signing in..."}</span>
                 </>
               ) : (
                 <>
                   <IconLock className="w-5 h-5" />
-                  <span>Sign in to Dashboard</span>
+                  <span>
+                    {needs2FA ? "Verify & Sign In" : "Sign in to Dashboard"}
+                  </span>
                 </>
               )}
             </motion.button>
@@ -238,13 +348,13 @@ export default function LoginPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
-              className="grid grid-cols-3 gap-3"
             >
               <motion.button
                 type="button"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="flex items-center justify-center h-12 bg-neutral-900 hover:bg-neutral-800 rounded-lg transition-colors border border-neutral-800 hover:border-neutral-700"
+                onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full flex items-center justify-center gap-3 h-12 bg-neutral-900 hover:bg-neutral-800 rounded-lg transition-colors border border-neutral-800 hover:border-neutral-700"
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                   <path
@@ -263,6 +373,28 @@ export default function LoginPage() {
                     fill="#EA4335"
                     d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                   />
+                </svg>
+                <span className="text-white font-medium">
+                  Continue with Google
+                </span>
+              </motion.button>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+              className="hidden grid-cols-3 gap-3"
+            >
+              <motion.button
+                type="button"
+                disabled
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="flex items-center justify-center h-12 bg-neutral-900 hover:bg-neutral-800 rounded-lg transition-colors border border-neutral-800 hover:border-neutral-700 opacity-50 cursor-not-allowed"
+              >
+                <svg className="w-5 h-5" viewBox="0 0 24 24">
+                  <path fill="#1877F2" d="..." />
                 </svg>
               </motion.button>
               <motion.button

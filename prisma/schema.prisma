@@ -14,11 +14,16 @@ model User {
   email                 String              @unique
   name                  String
   password              String?
+  image                 String?             // Profile image URL
   role                  String              @default("USER") // ADMIN or USER
   organizationId        String?
   organization          Organization?       @relation(fields: [organizationId], references: [id])
   resetToken            String?             @unique
   resetTokenExpiresAt   DateTime?
+  emailNotifications    Boolean             @default(true)
+  securityAlerts        Boolean             @default(true)
+  twoFactorEnabled      Boolean             @default(false)
+  twoFactorSecret       String?             // TOTP secret for 2FA
   createdAt             DateTime            @default(now())
   updatedAt             DateTime            @updatedAt
   invitations           Invitation[]        @relation("InvitedBy")

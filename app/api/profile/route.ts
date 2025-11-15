@@ -33,11 +33,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Get user preferences (we'll use defaults for now since we don't have a preferences table)
     const profileData = {
       id: user.id,
       email: user.email,
       name: user.name,
+      image: user.image,
       role: user.role,
       organization: user.organization
         ? {
@@ -59,11 +59,10 @@ export async function GET(request: NextRequest) {
       })),
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
-      // Default preferences (can be expanded later with a preferences table)
       preferences: {
-        emailNotifications: true,
-        securityAlerts: true,
-        twoFactorEnabled: false,
+        emailNotifications: user.emailNotifications,
+        securityAlerts: user.securityAlerts,
+        twoFactorEnabled: user.twoFactorEnabled,
       },
     };
 
@@ -134,6 +133,7 @@ export async function PATCH(request: NextRequest) {
       id: updatedUser.id,
       email: updatedUser.email,
       name: updatedUser.name,
+      image: updatedUser.image,
       role: updatedUser.role,
       organization: updatedUser.organization
         ? {
@@ -156,9 +156,9 @@ export async function PATCH(request: NextRequest) {
       createdAt: updatedUser.createdAt,
       updatedAt: updatedUser.updatedAt,
       preferences: {
-        emailNotifications: true,
-        securityAlerts: true,
-        twoFactorEnabled: false,
+        emailNotifications: updatedUser.emailNotifications,
+        securityAlerts: updatedUser.securityAlerts,
+        twoFactorEnabled: updatedUser.twoFactorEnabled,
       },
     };
 
