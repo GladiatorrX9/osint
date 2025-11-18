@@ -21,6 +21,9 @@ import {
 
 export default function RegisterPage() {
   const router = useRouter();
+  const searchParams = new URLSearchParams(
+    typeof window !== "undefined" ? window.location.search : ""
+  );
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [company, setCompany] = useState("");
@@ -28,6 +31,24 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Check for OAuth errors on component mount
+  useState(() => {
+    const oauthError = searchParams.get("error");
+    if (oauthError === "not_on_waitlist") {
+      setError(
+        "Please register for the waitlist first before signing in with Google."
+      );
+    } else if (oauthError === "waitlist_pending") {
+      setError(
+        "Your waitlist application is pending approval. We'll send you an email once approved!"
+      );
+    } else if (oauthError === "waitlist_rejected") {
+      setError(
+        "Your previous application was not approved. Please contact support for more information."
+      );
+    }
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

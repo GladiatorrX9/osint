@@ -97,64 +97,97 @@ export const authOptions: NextAuthOptions = {
       // Handle Google OAuth sign in
       if (account?.provider === "google" && user.email) {
         try {
-          // Check if user exists
+          // Check if user already exists
           let existingUser = await prisma.user.findUnique({
             where: { email: user.email },
             include: { organization: true },
           });
 
-          // If user doesn't exist, create one
-          if (!existingUser) {
-            // Create a default organization for the user
-            const organizationName = user.name || user.email.split("@")[0];
-            const slug = organizationName
-              .toLowerCase()
-              .replace(/[^a-z0-9]+/g, "-")
-              .replace(/(^-|-$)/g, "");
-
-            const result = await prisma.$transaction(async (tx) => {
-              // Create organization
-              const organization = await tx.organization.create({
-                data: {
-                  name: organizationName,
-                  slug: `${slug}-${Date.now()}`,
-                },
+          // If user exists, allow login and update image if needed
+          if (existingUser) {
+            if (!existingUser.image && user.image) {
+              await prisma.user.update({
+                where: { email: user.email },
+                data: { image: user.image },
               });
-
-              // Create user
-              const newUser = await tx.user.create({
-                data: {
-                  email: user.email!,
-                  name: user.name || user.email!.split("@")[0],
-                  image: user.image,
-                  organizationId: organization.id,
-                  // No password for OAuth users
-                  password: null,
-                },
-              });
-
-              // Create team member with OWNER role
-              await tx.teamMember.create({
-                data: {
-                  userId: newUser.id,
-                  organizationId: organization.id,
-                  role: "OWNER",
-                },
-              });
-
-              return { user: newUser, organization };
-            });
-
-            console.log(
-              `✅ New Google OAuth user created: ${result.user.email} (Org: ${result.organization.name})`
-            );
-          } else if (!existingUser.image && user.image) {
-            // Update user image if they don't have one
-            await prisma.user.update({
-              where: { email: user.email },
-              data: { image: user.image },
-            });
+            }
+            console.log(`✅ Google OAuth login: ${existingUser.email}`);
+            return true;
           }
+
+          // User doesn't exist - check waitlist status
+          const waitlistEntry = await prisma.waitlist.findUnique({
+            where: { email: user.email },
+          });
+
+          // If not on waitlist, deny access
+          if (!waitlistEntry) {
+            console.log(
+              `❌ Google OAuth denied: ${user.email} - Not on waitlist`
+            );
+            return "/register?error=not_on_waitlist";
+          }
+
+          // If on waitlist but not approved, deny access
+          if (waitlistEntry.status !== "APPROVED") {
+            console.log(
+              `❌ Google OAuth denied: ${user.email} - Waitlist status: ${waitlistEntry.status}`
+            );
+            return `/register?error=waitlist_${waitlistEntry.status.toLowerCase()}`;
+          }
+
+          // User is approved on waitlist - create account
+          const organizationName = user.name || user.email.split("@")[0];
+          const slug = organizationName
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/(^-|-$)/g, "");
+
+          const result = await prisma.$transaction(async (tx) => {
+            // Create organization
+            const organization = await tx.organization.create({
+              data: {
+                name: organizationName,
+                slug: `${slug}-${Date.now()}`,
+              },
+            });
+
+            // Create user
+            const newUser = await tx.user.create({
+              data: {
+                email: user.email!,
+                name: user.name || user.email!.split("@")[0],
+                image: user.image,
+                organizationId: organization.id,
+                // No password for OAuth users
+                password: null,
+              },
+            });
+
+            // Create team member with OWNER role
+            await tx.teamMember.create({
+              data: {
+                userId: newUser.id,
+                organizationId: organization.id,
+                role: "OWNER",
+              },
+            });
+
+            // Clear the onboarding token (mark as used)
+            await tx.waitlist.update({
+              where: { id: waitlistEntry.id },
+              data: {
+                onboardingToken: null,
+                tokenExpiresAt: null,
+              },
+            });
+
+            return { user: newUser, organization };
+          });
+
+          console.log(
+            `✅ New Google OAuth user created from approved waitlist: ${result.user.email} (Org: ${result.organization.name})`
+          );
 
           return true;
         } catch (error) {
@@ -165,23 +198,46 @@ export const authOptions: NextAuthOptions = {
 
       return true;
     },
-    async jwt({ token, user, account }) {
-      if (user) {
-        // For initial sign in, fetch user data from database
+    async jwt({ token, user, account, trigger, session }) {
+      // On sign in or when session is updated, fetch latest user data
+      if (user || trigger === "update") {
         const dbUser = await prisma.user.findUnique({
-          where: { email: user.email! },
+          where: { email: user?.email || token.email! },
         });
         if (dbUser) {
           token.role = dbUser.role;
           token.id = dbUser.id;
+          token.image = dbUser.image;
+          token.name = dbUser.name;
         }
       }
       return token;
     },
     async session({ session, token }) {
       if (session?.user) {
-        (session.user as any).id = token.id || token.sub;
-        (session.user as any).role = token.role;
+        // Always fetch latest user data from database to ensure fresh data
+        const dbUser = await prisma.user.findUnique({
+          where: { email: session.user.email! },
+        });
+
+        if (dbUser) {
+          (session.user as any).id = dbUser.id;
+          (session.user as any).role = dbUser.role;
+          session.user.name = dbUser.name;
+          session.user.image = dbUser.image;
+
+          console.log(
+            `📸 Session updated for ${dbUser.email}, image: ${
+              dbUser.image ? "set" : "null"
+            }`
+          );
+        } else {
+          // Fallback to token data if DB query fails
+          (session.user as any).id = token.id || token.sub;
+          (session.user as any).role = token.role;
+          if (token.image) session.user.image = token.image as string;
+          if (token.name) session.user.name = token.name as string;
+        }
       }
       return session;
     },

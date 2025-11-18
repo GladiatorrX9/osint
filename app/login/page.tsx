@@ -43,6 +43,30 @@ export default function LoginPage() {
         "Password reset successful! You can now log in with your new password."
       );
     }
+    // Check if user was logged out due to session timeout
+    if (searchParams.get("timeout") === "true") {
+      setError("Your session expired due to inactivity. Please log in again.");
+    }
+
+    // Check for OAuth errors
+    const oauthError = searchParams.get("error");
+    if (oauthError === "not_on_waitlist") {
+      setError(
+        "Access denied. Please register for the waitlist first before signing in with Google."
+      );
+    } else if (oauthError === "waitlist_pending") {
+      setError(
+        "Your waitlist application is pending approval. Please wait for admin approval or use the onboarding link sent to your email."
+      );
+    } else if (oauthError === "waitlist_rejected") {
+      setError(
+        "Your waitlist application was rejected. Please contact support for more information."
+      );
+    } else if (oauthError === "OAuthAccountNotLinked") {
+      setError(
+        "This email is already registered with a password. Please sign in using your email and password instead."
+      );
+    }
   }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {

@@ -1,6 +1,7 @@
 "use client";
 import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -61,6 +62,7 @@ interface ProfileData {
 }
 
 export default function ProfileViewPage() {
+  const router = useRouter();
   const { data: session, update: updateSession } = useSession();
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
@@ -167,15 +169,23 @@ export default function ProfileViewPage() {
         throw new Error(data.error || "Failed to upload image");
       }
 
-      // Update local state
+      console.log("📸 Image uploaded successfully:", data.imageUrl);
+
+      // Update local state immediately
       setProfileData((prev) =>
         prev ? { ...prev, image: data.imageUrl } : null
       );
 
-      // Update session
+      // Force NextAuth session update - this will trigger the session callback
+      // which fetches fresh data from the database
       await updateSession();
 
-      toast.success("Profile image updated successfully");
+      console.log("📸 Session update triggered, refreshing router...");
+
+      // Refresh the router to update all server components
+      router.refresh();
+
+      toast.success("Profile image updated! Refreshing...");
     } catch (error: any) {
       console.error("Error uploading image:", error);
       toast.error(error.message || "Failed to upload image");
