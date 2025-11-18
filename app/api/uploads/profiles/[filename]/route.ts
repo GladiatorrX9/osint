@@ -8,10 +8,7 @@ type RouteContext = {
 };
 
 // GET /api/uploads/profiles/[filename] - Serve uploaded profile images
-export async function GET(
-  request: NextRequest,
-  context: RouteContext
-) {
+export async function GET(request: NextRequest, context: RouteContext) {
   try {
     const { filename } = await context.params;
 
