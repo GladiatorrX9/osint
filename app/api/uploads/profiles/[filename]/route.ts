@@ -3,13 +3,17 @@ import { readFile } from "fs/promises";
 import { join } from "path";
 import { existsSync } from "fs";
 
+type RouteContext = {
+  params: Promise<{ filename: string }>;
+};
+
 // GET /api/uploads/profiles/[filename] - Serve uploaded profile images
 export async function GET(
   request: NextRequest,
-  { params }: { params: { filename: string } }
+  context: RouteContext
 ) {
   try {
-    const filename = params.filename;
+    const { filename } = await context.params;
 
     // Security: Validate filename to prevent directory traversal
     if (!filename || filename.includes("..") || filename.includes("/")) {
