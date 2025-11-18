@@ -75,8 +75,8 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(bytes);
     await writeFile(filepath, buffer);
 
-    // Update user with image URL
-    const imageUrl = `/uploads/profiles/${filename}`;
+    // Update user with image URL (using API route for production compatibility)
+    const imageUrl = `/api/uploads/profiles/${filename}`;
     const updatedUser = await prisma.user.update({
       where: { id: user.id },
       data: { image: imageUrl },
